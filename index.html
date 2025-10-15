@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>歌词猜猜乐 - Lyric Wordle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 歌词猜猜乐 🎵</h1>
+            <p class="subtitle">猜出今日的歌词！你有6次机会</p>
+        </header>
+
+        <main>
+            <!-- 游戏网格 -->
+            <div id="game-grid" class="game-grid">
+                <!-- 网格将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="input-section">
+                <input 
+                    type="text" 
+                    id="guess-input" 
+                    placeholder="请输入你的猜测..." 
+                    maxlength="50"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                >
+                <button id="submit-btn" onclick="submitGuess()">提交</button>
+            </div>
+
+            <!-- 提示汉字区域 -->
+            <div class="hint-section">
+                <h3>提示汉字 <span style="font-size: 0.8em; color: #6aaa64;">（包含答案中的所有字符）</span></h3>
+                <div id="hint-chars" class="hint-chars">
+                    <!-- 提示汉字将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 游戏状态显示 -->
+            <div id="game-status" class="game-status">
+                <p>剩余机会: <span id="remaining-attempts">6</span></p>
+            </div>
+
+            <!-- 游戏结果弹窗 -->
+            <div id="game-modal" class="modal hidden">
+                <div class="modal-content">
+                    <h2 id="modal-title"></h2>
+                    <p id="modal-message"></p>
+                    <button onclick="newGame()">开始新游戏</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="rules">
+                <h3>游戏规则</h3>
+                <div class="rule-item">
+                    <span class="color-box correct"></span>
+                    <span><span style="background-color: #6aaa64; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.9em;">绿色</span>：字正确且位置正确</span>
+                </div>
+                <div class="rule-item">
+                    <span class="color-box present"></span>
+                    <span><span style="background-color: #c9b458; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.9em;">黄色</span>：字正确但位置错误</span>
+                </div>
+                <div class="rule-item">
+                    <span class="color-box absent"></span>
+                    <span><span style="background-color: #787c7e; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.9em;">灰色</span>：字不在答案中</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
