@@ -24,7 +24,6 @@ const charCounter = document.getElementById('char-counter');
 
 // 歌词卡DOM元素
 const lyricsCardModal = document.getElementById('lyrics-card-modal');
-const lyricsText = document.getElementById('lyrics-text');
 const songTitle = document.getElementById('song-title');
 const songArtist = document.getElementById('song-artist');
 
@@ -340,6 +339,13 @@ function endGame(won, message) {
 // 开始新游戏
 async function newGame() {
     try {
+        // 关闭当前播放的音乐
+        const songAudio = document.getElementById('song-audio');
+        if (songAudio && !songAudio.paused) {
+            songAudio.pause();
+            songAudio.currentTime = 0;
+        }
+        
         // 重置游戏状态
         gameState.currentRow = 0;
         gameState.gameOver = false;
@@ -348,7 +354,15 @@ async function newGame() {
         
         // 隐藏弹窗
         gameModal.classList.add('hidden');
-        lyricsCardModal.classList.add('hidden');
+        
+        // 优雅地关闭歌词卡
+        if (!lyricsCardModal.classList.contains('hidden')) {
+            lyricsCardModal.classList.add('closing');
+            setTimeout(() => {
+                lyricsCardModal.classList.add('hidden');
+                lyricsCardModal.classList.remove('closing');
+            }, 300);
+        }
         
         // 从服务器获取新的游戏数据
         const response = await fetch('/api/new-game', {
@@ -409,27 +423,199 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 歌词卡相关功能
 function showLyricsCard() {
-    // 设置歌词内容
-    lyricsText.textContent = gameState.targetLyric;
-    
-    // 设置歌曲信息（使用游戏状态中的信息）
-    songTitle.textContent = gameState.songTitle || '经典歌词';
-    songArtist.textContent = gameState.songArtist || '传世金曲';
+    // 设置歌词图片和文本
+    setupLyricsImage();
     
     // 设置歌曲来源信息
-    updateSongSource();
+    updateSongSourceEnhanced();
+    
+    // 设置音频播放
+    setupAudioPlayer();
     
     // 显示歌词卡
     lyricsCardModal.classList.remove('hidden');
+    lyricsCardModal.classList.remove('closing');
+}
+
+// 设置歌词图片展示
+function setupLyricsImage() {
+    const lyricsImage = document.getElementById('lyrics-image');
     
-    // 添加显示动画延迟
+    // 设置图片路径 - 根据歌曲标题获取对应图片
+    const imageName = getSongImageName(gameState.songTitle);
+    lyricsImage.src = `file/${imageName}`;
+    
+    // 图片加载错误时的处理
+    lyricsImage.onerror = function() {
+        // 如果图片不存在，显示错误消息
+        console.log('图片加载失败:', imageName);
+        lyricsImage.alt = '图片加载失败';
+        lyricsImage.style.display = 'block';
+        lyricsImage.style.minHeight = '300px';
+        lyricsImage.style.background = '#f0f0f0';
+    };
+}
+
+// 根据歌曲标题获取图片名称
+function getSongImageName(songTitle) {
+    // 文件映射表 - 可以根据需要添加更多歌曲
+    const imageMap = {
+        '一路向北': '一路向北.png',
+        // 未来可以添加更多歌曲的图片映射
+        // '歌曲名': '图片文件名.png',
+    };
+    
+    // 首先尝试精确匹配
+    if (imageMap[songTitle]) {
+        return imageMap[songTitle];
+    }
+    
+    // 如果没有精确匹配，尝试模糊匹配
+    for (const [title, filename] of Object.entries(imageMap)) {
+        if (songTitle.includes(title) || title.includes(songTitle)) {
+            return filename;
+        }
+    }
+    
+    // 默认使用一路向北的图片
+    return '一路向北.png';
+}
+
+// 设置音频播放器
+function setupAudioPlayer() {
+    const audioSource = document.getElementById('audio-source');
+    const songAudio = document.getElementById('song-audio');
+    const musicControlBtn = document.getElementById('music-control-btn');
+    const musicIcon = document.getElementById('music-icon');
+    const musicControlText = document.getElementById('music-control-text');
+    
+    // 设置音频路径
+    const audioName = getSongAudioName(gameState.songTitle);
+    audioSource.src = `file/${audioName}`;
+    
+    // 重新加载音频
+    songAudio.load();
+    
+    // 初始化按钮状态
+    musicIcon.textContent = '🎵';
+    musicControlText.textContent = '播放';
+    musicControlBtn.classList.remove('muted');
+    
+    // 监听音频事件
+    songAudio.addEventListener('ended', () => {
+        musicIcon.textContent = '🎵';
+        musicControlText.textContent = '播放';
+        musicControlBtn.classList.remove('muted');
+    });
+    
+    songAudio.addEventListener('pause', () => {
+        musicIcon.textContent = '🎵';
+        musicControlText.textContent = '播放';
+        musicControlBtn.classList.remove('muted');
+    });
+    
+    songAudio.addEventListener('play', () => {
+        musicIcon.textContent = '⏸️';
+        musicControlText.textContent = '暂停';
+        musicControlBtn.classList.remove('muted');
+    });
+    
+    // 猜对瞬间自动播放
     setTimeout(() => {
-        lyricsCardModal.style.opacity = '1';
-    }, 100);
+        songAudio.play().then(() => {
+            musicIcon.textContent = '🎵̸';
+            musicControlBtn.classList.remove('muted');
+        }).catch(error => {
+            console.log('自动播放失败，需要用户手动播放:', error);
+            musicIcon.textContent = '🎵';
+            musicControlBtn.classList.remove('muted');
+        });
+    }, 1000);
+}
+
+// 根据歌曲标题获取音频文件名称
+function getSongAudioName(songTitle) {
+    // 音频文件映射表
+    const audioMap = {
+        '一路向北': '一路向北.mp3',
+        // 未来可以添加更多歌曲的音频映射
+        // '歌曲名': '音频文件名.mp3',
+    };
+    
+    // 首先尝试精确匹配
+    if (audioMap[songTitle]) {
+        return audioMap[songTitle];
+    }
+    
+    // 如果没有精确匹配，尝试模糊匹配
+    for (const [title, filename] of Object.entries(audioMap)) {
+        if (songTitle.includes(title) || title.includes(songTitle)) {
+            return filename;
+        }
+    }
+    
+    // 默认使用一路向北的音频
+    return '一路向北.mp3';
+}
+
+// 音频播放切换功能
+function toggleAudio() {
+    const songAudio = document.getElementById('song-audio');
+    const musicControlBtn = document.getElementById('music-control-btn');
+    const musicIcon = document.getElementById('music-icon');
+    const musicControlText = document.getElementById('music-control-text');
+    
+    if (songAudio.paused) {
+        songAudio.play().then(() => {
+            musicIcon.textContent = '⏸️';
+            musicControlText.textContent = '暂停';
+            musicControlBtn.classList.remove('muted');
+        }).catch(error => {
+            console.log('播放失败:', error);
+            musicIcon.textContent = '🎵';
+            musicControlText.textContent = '播放';
+            musicControlBtn.classList.add('muted');
+        });
+    } else {
+        songAudio.pause();
+        musicIcon.textContent = '🎵';
+        musicControlText.textContent = '播放';
+        musicControlBtn.classList.remove('muted');
+    }
+}
+
+// 测试函数 - 直接显示歌词卡
+function testLyricsCard() {
+    // 设置测试数据
+    gameState.targetLyric = "我一路向北离开有你的季节";
+    gameState.songTitle = "一路向北";
+    gameState.songArtist = "周杰伦";
+    gameState.songSource = {
+        type: 'daily',
+        name: '每日30首推荐歌单',
+        description: '今日精选经典老歌'
+    };
+    
+    // 显示歌词卡
+    showLyricsCard();
 }
 
 function closeLyricsCard() {
-    lyricsCardModal.classList.add('hidden');
+    // 关闭音乐播放
+    const songAudio = document.getElementById('song-audio');
+    if (songAudio && !songAudio.paused) {
+        songAudio.pause();
+        songAudio.currentTime = 0;
+    }
+    
+    // 添加关闭动画类
+    lyricsCardModal.classList.add('closing');
+    
+    // 在动画完成后隐藏弹窗
+    setTimeout(() => {
+        lyricsCardModal.classList.add('hidden');
+        lyricsCardModal.classList.remove('closing');
+    }, 300);
 }
 
 function getSongInfo(lyric) {
@@ -468,56 +654,12 @@ function getSongInfo(lyric) {
     };
 }
 
-function shareLyrics() {
-    const shareText = `我在"歌词猜猜乐"中猜对了这句歌词：\n\n"${gameState.targetLyric}"\n\n快来挑战吧！`;
-    
-    if (navigator.share) {
-        // 使用原生分享API（移动设备）
-        navigator.share({
-            title: '歌词猜猜乐',
-            text: shareText,
-            url: window.location.href
-        }).catch(err => {
-            console.log('分享失败:', err);
-            fallbackShare(shareText);
-        });
-    } else {
-        // 降级处理
-        fallbackShare(shareText);
-    }
-}
+// 分享功能已删除，节省空间
 
-function fallbackShare(text) {
-    // 复制到剪贴板
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-            showNotification('✅ 已复制到剪贴板，快去分享吧！');
-        }).catch(err => {
-            console.error('复制失败:', err);
-            showNotification('📋 请手动复制分享内容');
-        });
-    } else {
-        // 更老的浏览器兼容
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            showNotification('✅ 已复制到剪贴板，快去分享吧！');
-        } catch (err) {
-            console.error('复制失败:', err);
-            showNotification('📋 请手动复制分享内容');
-        }
-        document.body.removeChild(textArea);
-    }
-}
-
-// 更新歌曲来源信息显示
-function updateSongSource() {
-    const sourceInfo = document.getElementById('source-info');
-    const sourceText = sourceInfo.querySelector('.source-text');
-    const sourceIcon = sourceInfo.querySelector('.source-icon');
+// 更新歌曲来源按钮显示
+function updateSongSourceEnhanced() {
+    const sourceBtnIcon = document.getElementById('source-btn-icon');
+    const sourceBtnText = document.getElementById('source-btn-text');
     
     if (gameState.songSource) {
         const source = gameState.songSource;
@@ -535,15 +677,11 @@ function updateSongSource() {
                 break;
         }
         
-        sourceIcon.textContent = icon;
-        sourceText.textContent = source.name;
-        
-        // 添加点击事件
-        sourceInfo.onclick = () => showLyricsSource();
+        sourceBtnIcon.textContent = icon;
+        sourceBtnText.textContent = '来源';
     } else {
-        sourceIcon.textContent = '📀';
-        sourceText.textContent = '经典歌曲合集';
-        sourceInfo.onclick = () => showLyricsSource();
+        sourceBtnIcon.textContent = '📀';
+        sourceBtnText.textContent = '来源';
     }
 }
 

@@ -1,0 +1,102 @@
+[
+  {
+    "lyric": "甜蜜蜜你笑得甜蜜蜜",
+    "title": "甜蜜蜜",
+    "artist": "邓丽君",
+    "source": {
+      "type": "favorite",
+      "name": "我的收藏歌单",
+      "description": "个人珍藏经典"
+    }
+  },
+  {
+    "lyric": "三分天注定七分靠打拼",
+    "title": "爱拼才会赢",
+    "artist": "叶启田",
+    "source": {
+      "type": "hot",
+      "name": "热门榜单",
+      "description": "励志金曲排行"
+    }
+  },
+  {
+    "lyric": "今天我寒夜里看雪飘过",
+    "title": "海阔天空",
+    "artist": "Beyond",
+    "source": {
+      "type": "favorite",
+      "name": "我的收藏歌单",
+      "description": "个人珍藏经典"
+    }
+  },
+  {
+    "lyric": "喜欢你那双眼动人",
+    "title": "喜欢你",
+    "artist": "Beyond",
+    "source": {
+      "type": "favorite",
+      "name": "我的收藏歌单",
+      "description": "摇滚经典收藏"
+    }
+  },
+  {
+    "lyric": "我和我的祖国一刻也不能分割",
+    "title": "我和我的祖国",
+    "artist": "华语群星",
+    "source": {
+      "type": "favorite",
+      "name": "我的收藏歌单",
+      "description": "摇滚经典收藏"
+    }
+  },
+  {
+    "lyric": "我曾经拥有着的一切",
+    "title": "平凡之路",
+    "artist": "朴树",
+    "source": {
+      "type": "daily",
+      "name": "每日30首推荐歌单",
+      "description": "个人珍藏经典"
+    }
+  },
+  {
+    "lyric": "明天你是否会想起",
+    "title": "同桌的你",
+    "artist": "老狼",
+    "source": {
+      "type": "hot",
+      "name": "热门榜单",
+      "description": "励志金曲排行"
+    }
+  },
+  {
+    "lyric": "朋友一生一起走",
+    "title": "朋友",
+    "artist": "周华健",
+    "source": {
+      "type": "favorite",
+      "name": "我的收藏歌单",
+      "description": "个人珍藏经典"
+    }
+  },
+  {
+    "lyric": "古老的东方有一条龙",
+    "title": "龙的传人",
+    "artist": "王力宏",
+    "source": {
+      "type": "favorite",
+      "name": "我的收藏歌单",
+      "description": "我的经典收藏"
+    }
+  },
+  {
+    "lyric": "你在南方的艳阳里大雪纷飞",
+    "title": "南山南",
+    "artist": "马頔",
+    "source": {
+      "type": "hot",
+      "name": "热门榜单",
+      "description": "经典热门金曲"
+    }
+  }
+]
