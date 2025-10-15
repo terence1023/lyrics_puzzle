@@ -17,6 +17,7 @@ const remainingAttempts = document.getElementById('remaining-attempts');
 const gameModal = document.getElementById('game-modal');
 const modalTitle = document.getElementById('modal-title');
 const modalMessage = document.getElementById('modal-message');
+const charCounter = document.getElementById('char-counter');
 
 // 游戏初始化
 async function initGame() {
@@ -31,7 +32,8 @@ async function initGame() {
             gameState.charStates.clear(); // 清除字符状态
             setupGameGrid();
             setupHintChars();
-            updateRemainingAttempts();
+            setupInputEvents();
+            updateCharCounter();
         } else {
             showError('获取游戏数据失败，请刷新页面重试');
         }
@@ -100,6 +102,73 @@ function insertCharToInput(char) {
     if (currentValue.length < maxLength) {
         guessInput.value = currentValue + char;
         guessInput.focus();
+        updateCharCounter();
+    }
+}
+
+// 更新字符计数器
+function updateCharCounter() {
+    if (!gameState.targetLyric || !charCounter) return;
+    
+    const currentLength = guessInput.value.length;
+    const targetLength = gameState.targetLyric.length;
+    const remaining = Math.max(0, targetLength - currentLength);
+    
+    if (remaining === 0) {
+        charCounter.textContent = '已完成';
+        charCounter.style.background = '#6aaa64';
+    } else {
+        charCounter.textContent = `还需${remaining}字`;
+        charCounter.style.background = '#667eea';
+    }
+}
+
+// 设置输入框事件监听器  
+function setupInputEvents() {
+    // 回车键提交
+    guessInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            submitGuess();
+        }
+    });
+    
+    // 处理输入法相关问题和字符过滤
+    let isComposing = false;
+    
+    // 监听输入法开始和结束
+    guessInput.addEventListener('compositionstart', function() {
+        isComposing = true;
+    });
+    
+    guessInput.addEventListener('compositionend', function(e) {
+        isComposing = false;
+        // 输入法结束后再处理字符过滤和计数更新
+        filterAndUpdateInput(e);
+    });
+    
+    // 输入事件监听
+    guessInput.addEventListener('input', function(e) {
+        // 如果正在使用输入法，不进行处理
+        if (isComposing) {
+            return;
+        }
+        filterAndUpdateInput(e);
+    });
+    
+    // 字符过滤和更新函数
+    function filterAndUpdateInput(e) {
+        const value = e.target.value;
+        const cleanedValue = value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
+        
+        // 限制输入长度
+        const maxLength = gameState.targetLyric.length;
+        const finalValue = cleanedValue.slice(0, maxLength);
+        
+        if (value !== finalValue) {
+            e.target.value = finalValue;
+        }
+        
+        updateCharCounter();
     }
 }
 
@@ -162,15 +231,15 @@ async function submitGuess() {
                 showSuccessEffect();
             } else {
                 gameState.currentRow++;
-                updateRemainingAttempts();
                 
                 if (gameState.currentRow >= gameState.maxAttempts) {
                     endGame(false, `游戏结束！\n正确答案是："${gameState.targetLyric}"`);
                 }
             }
             
-            // 清空输入框
+            // 清空输入框并更新计数器
             guessInput.value = '';
+            updateCharCounter();
         } else {
             showError(data.message || '提交失败，请重试');
         }
@@ -246,10 +315,10 @@ function updateHintCharColor(char, state) {
     });
 }
 
-// 更新剩余尝试次数
+// 更新剩余尝试次数 (已移除显示，保留函数以防其他地方调用)
 function updateRemainingAttempts() {
-    const remaining = gameState.maxAttempts - gameState.currentRow;
-    remainingAttempts.textContent = remaining;
+    // 功能已移除，不再显示剩余机会
+    return;
 }
 
 // 结束游戏
@@ -289,17 +358,17 @@ async function newGame() {
             gameState.hintChars = data.hintChars;
             setupGameGrid();
             setupHintChars();
-            updateRemainingAttempts();
             
             // 重置游戏状态显示
             const statusElement = document.getElementById('game-status');
-            statusElement.innerHTML = `<p>剩余机会: <span id="remaining-attempts">6</span></p>`;
+            statusElement.innerHTML = ``;
         } else {
             throw new Error(data.message || '获取新游戏数据失败');
         }
         
-        // 清空输入框
+        // 清空输入框并更新计数器
         guessInput.value = '';
+        updateCharCounter();
         guessInput.focus();
     } catch (error) {
         console.error('开始新游戏失败:', error);
@@ -311,46 +380,6 @@ async function newGame() {
 function showError(message) {
     // 简单的错误提示，可以后续优化为更好的UI
     alert(message);
-}
-
-// 键盘事件监听
-guessInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        submitGuess();
-    }
-});
-
-// 处理输入法相关问题和字符过滤
-let isComposing = false;
-
-// 监听输入法开始和结束
-guessInput.addEventListener('compositionstart', function() {
-    isComposing = true;
-});
-
-guessInput.addEventListener('compositionend', function(e) {
-    isComposing = false;
-    // 输入法结束后再处理字符过滤
-    filterInput(e);
-});
-
-// 只允许输入中文字符、英文字母和数字
-guessInput.addEventListener('input', function(e) {
-    // 如果正在使用输入法，不进行处理
-    if (isComposing) {
-        return;
-    }
-    filterInput(e);
-});
-
-// 字符过滤函数
-function filterInput(e) {
-    const value = e.target.value;
-    const cleanedValue = value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
-    
-    if (value !== cleanedValue) {
-        e.target.value = cleanedValue;
-    }
 }
 
 // 防止输入框失去焦点（提升用户体验）

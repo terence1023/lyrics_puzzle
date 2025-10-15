@@ -6,7 +6,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'PingFang SC', 'Microsoft YaHei', '微软雅黑', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     color: #333;
@@ -21,19 +21,52 @@ body {
 /* 头部样式 */
 header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
+
+/* 简洁游戏规则 */
+.rules-quick {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    background: rgba(255,255,255,0.15);
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    color: white;
+    flex-wrap: wrap;
+}
+
+.rule-quick {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rule-quick .color-indicator {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+}
+
+.rule-quick .color-indicator.correct { background-color: #6aaa64; }
+.rule-quick .color-indicator.present { background-color: #c9b458; }
+.rule-quick .color-indicator.absent { background-color: #787c7e; }
 
 header h1 {
     color: white;
     font-size: 2.5em;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    font-weight: 600;
 }
 
 .subtitle {
     color: rgba(255,255,255,0.9);
     font-size: 1.1em;
+    font-weight: 400;
 }
 
 .demo-notice {
@@ -105,31 +138,61 @@ header h1 {
 /* 输入区域样式 */
 .input-section {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     margin-bottom: 20px;
     justify-content: center;
+    align-items: flex-end;
+}
+
+.input-container {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
 }
 
 #guess-input {
-    flex: 1;
-    max-width: 400px;
-    padding: 15px;
+    width: 100%;
+    padding: 15px 70px 15px 20px;
     font-size: 1.1em;
-    border: none;
-    border-radius: 10px;
+    border: 2px solid #7c3aed;
+    border-radius: 12px;
     outline: none;
+    background: white;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     transition: box-shadow 0.3s ease;
+    font-family: 'PingFang SC', 'Microsoft YaHei', '微软雅黑', sans-serif;
+    color: #333;
 }
 
 #guess-input:focus {
+    border-color: #6d28d9;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+#guess-input::placeholder {
+    color: #999;
+    font-weight: 400;
+}
+
+.char-counter {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #667eea;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+    pointer-events: none;
+    opacity: 0.9;
 }
 
 #submit-btn {
     padding: 15px 25px;
     font-size: 1.1em;
-    font-weight: bold;
+    font-weight: 600;
     background: linear-gradient(45deg, #667eea, #764ba2);
     color: white;
     border: none;
@@ -137,6 +200,7 @@ header h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    font-family: 'PingFang SC', 'Microsoft YaHei', '微软雅黑', sans-serif;
 }
 
 #submit-btn:hover {
@@ -145,9 +209,10 @@ header h1 {
 }
 
 #submit-btn:disabled {
-    background: #ccc;
+    background: #bbb;
     cursor: not-allowed;
     transform: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* 游戏状态样式 */
@@ -302,6 +367,11 @@ header h1 {
         font-size: 2em;
     }
     
+    .rules-quick {
+        gap: 15px;
+        font-size: 0.85em;
+    }
+    
     .letter-box {
         width: 40px;
         height: 40px;
@@ -311,12 +381,24 @@ header h1 {
     .input-section {
         flex-direction: column;
         align-items: center;
+        gap: 10px;
+    }
+    
+    .input-container {
+        max-width: none;
+        width: 100%;
     }
     
     #guess-input {
         width: 100%;
-        max-width: none;
-        margin-bottom: 10px;
+        font-size: 1.1em;
+        padding: 16px 60px 16px 20px;
+    }
+    
+    .char-counter {
+        right: 15px;
+        padding: 4px 8px;
+        font-size: 0.8em;
     }
     
     .hint-chars {

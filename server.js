@@ -336,10 +336,29 @@ function startServer() {
     // 加载歌词库
     loadLyricsDatabase();
     
-    // 启动服务器
-    app.listen(PORT, () => {
+    // 获取本机IP地址
+    const os = require('os');
+    const networkInterfaces = os.networkInterfaces();
+    let localIP = 'localhost';
+    
+    // 查找局域网IP
+    for (const interfaceName in networkInterfaces) {
+        const networkInterface = networkInterfaces[interfaceName];
+        for (const network of networkInterface) {
+            if (network.family === 'IPv4' && !network.internal && network.address.startsWith('192.168.')) {
+                localIP = network.address;
+                break;
+            }
+        }
+        if (localIP !== 'localhost') break;
+    }
+    
+    // 启动服务器，监听所有网卡接口
+    app.listen(PORT, '0.0.0.0', () => {
         console.log(`🎵 歌词猜猜乐服务器运行在端口 ${PORT}`);
-        console.log(`🌐 访问地址: http://localhost:${PORT}`);
+        console.log(`🌐 本地访问: http://localhost:${PORT}`);
+        console.log(`🌐 局域网访问: http://${localIP}:${PORT}`);
+        console.log(`📱 手机/平板访问: http://${localIP}:${PORT}`);
         
         // 设置今日歌词
         const todayLyric = getTodayLyric();
