@@ -1,6 +1,9 @@
 // 游戏状态管理
 let gameState = {
     targetLyric: '',           // 目标歌词
+    songTitle: '',             // 歌曲名称
+    songArtist: '',            // 歌手名称
+    songSource: null,          // 歌曲来源信息
     currentRow: 0,             // 当前行数
     maxAttempts: 6,            // 最大尝试次数
     gameOver: false,           // 游戏是否结束
@@ -19,6 +22,12 @@ const modalTitle = document.getElementById('modal-title');
 const modalMessage = document.getElementById('modal-message');
 const charCounter = document.getElementById('char-counter');
 
+// 歌词卡DOM元素
+const lyricsCardModal = document.getElementById('lyrics-card-modal');
+const lyricsText = document.getElementById('lyrics-text');
+const songTitle = document.getElementById('song-title');
+const songArtist = document.getElementById('song-artist');
+
 // 游戏初始化
 async function initGame() {
     try {
@@ -28,6 +37,9 @@ async function initGame() {
         
         if (data.success) {
             gameState.targetLyric = data.lyric;
+            gameState.songTitle = data.title || '经典歌词';
+            gameState.songArtist = data.artist || '传世金曲';
+            gameState.songSource = data.source || null;
             gameState.hintChars = data.hintChars;
             gameState.charStates.clear(); // 清除字符状态
             setupGameGrid();
@@ -182,15 +194,9 @@ function showSuccessEffect() {
         }, index * 100);
     });
     
-    // 显示成功消息
+    // 显示歌词卡
     setTimeout(() => {
-        const statusElement = document.getElementById('game-status');
-        statusElement.innerHTML = `
-            <p style="color: #6aaa64; font-weight: bold; font-size: 1.4em;">
-                🎉 恭喜你猜对了！答案是："${gameState.targetLyric}"
-            </p>
-            <button onclick="newGame()" style="margin-top: 15px; padding: 10px 20px; background: #6aaa64; color: white; border: none; border-radius: 8px; cursor: pointer;">开始新游戏</button>
-        `;
+        showLyricsCard();
     }, 1000);
 }
 
@@ -342,6 +348,7 @@ async function newGame() {
         
         // 隐藏弹窗
         gameModal.classList.add('hidden');
+        lyricsCardModal.classList.add('hidden');
         
         // 从服务器获取新的游戏数据
         const response = await fetch('/api/new-game', {
@@ -355,6 +362,9 @@ async function newGame() {
         
         if (data.success) {
             gameState.targetLyric = data.lyric;
+            gameState.songTitle = data.title || '经典歌词';
+            gameState.songArtist = data.artist || '传世金曲';
+            gameState.songSource = data.source || null;
             gameState.hintChars = data.hintChars;
             setupGameGrid();
             setupHintChars();
@@ -395,4 +405,263 @@ guessInput.addEventListener('blur', function() {
 document.addEventListener('DOMContentLoaded', function() {
     initGame();
     guessInput.focus();
+});
+
+// 歌词卡相关功能
+function showLyricsCard() {
+    // 设置歌词内容
+    lyricsText.textContent = gameState.targetLyric;
+    
+    // 设置歌曲信息（使用游戏状态中的信息）
+    songTitle.textContent = gameState.songTitle || '经典歌词';
+    songArtist.textContent = gameState.songArtist || '传世金曲';
+    
+    // 设置歌曲来源信息
+    updateSongSource();
+    
+    // 显示歌词卡
+    lyricsCardModal.classList.remove('hidden');
+    
+    // 添加显示动画延迟
+    setTimeout(() => {
+        lyricsCardModal.style.opacity = '1';
+    }, 100);
+}
+
+function closeLyricsCard() {
+    lyricsCardModal.classList.add('hidden');
+}
+
+function getSongInfo(lyric) {
+    // 这里可以扩展为真实的歌曲信息数据库
+    // 目前返回通用信息
+    const songDatabase = {
+        '你问我爱你有多深': { title: '爱你有多深', artist: '邓丽君' },
+        '甜蜜蜜你笑得甜蜜蜜': { title: '甜蜜蜜', artist: '邓丽君' },
+        '小城故事多充满喜和乐': { title: '小城故事', artist: '邓丽君' },
+        '路边的野花不要采': { title: '路边的野花不要采', artist: '邓丽君' },
+        '但愿人长久千里共婵娟': { title: '但愿人长久', artist: '邓丽君' },
+        '今天我寒夜里看雪飘过': { title: '寒夜', artist: '梅艳芳' },
+        '喜欢你那双眼动人': { title: '喜欢你', artist: 'Beyond' },
+        '让我们荡起双桨': { title: '让我们荡起双桨', artist: '少儿合唱' },
+        '我和我的祖国一刻也不能分割': { title: '我和我的祖国', artist: '李谷一' },
+        '千年等一回等一回啊': { title: '千年等一回', artist: '高胜美' },
+        '敢问路在何方路在脚下': { title: '敢问路在何方', artist: '蒋大为' },
+        '难忘今宵无论天涯海角': { title: '难忘今宵', artist: '李谷一' },
+        '五星红旗迎风飘扬': { title: '歌唱祖国', artist: '王莘' },
+        '东方红太阳升': { title: '东方红', artist: '经典民歌' },
+        '好一朵美丽的茉莉花': { title: '茉莉花', artist: '经典民歌' },
+        '长亭外古道边芳草碧连天': { title: '送别', artist: '李叔同' },
+        '浪奔浪流万里滔滔江水永不休': { title: '万里长城永不倒', artist: '罗文' },
+        '万水千山总是情': { title: '万水千山总是情', artist: '汪明荃' },
+        '明月几时有把酒问青天': { title: '但愿人长久', artist: '王菲' },
+        '村里有个姑娘叫小芳': { title: '小芳', artist: '李春波' },
+        '明天你是否会想起': { title: '同桌的你', artist: '老狼' },
+        '睡在我上铺的兄弟': { title: '睡在我上铺的兄弟', artist: '老狼' },
+        '朋友一生一起走': { title: '朋友', artist: '周华健' },
+        '把握生命里的每一分钟': { title: '真心英雄', artist: '成龙、周华健、黄耀明、李宗盛' }
+    };
+    
+    return songDatabase[lyric] || { 
+        title: '经典歌词', 
+        artist: '传世金曲' 
+    };
+}
+
+function shareLyrics() {
+    const shareText = `我在"歌词猜猜乐"中猜对了这句歌词：\n\n"${gameState.targetLyric}"\n\n快来挑战吧！`;
+    
+    if (navigator.share) {
+        // 使用原生分享API（移动设备）
+        navigator.share({
+            title: '歌词猜猜乐',
+            text: shareText,
+            url: window.location.href
+        }).catch(err => {
+            console.log('分享失败:', err);
+            fallbackShare(shareText);
+        });
+    } else {
+        // 降级处理
+        fallbackShare(shareText);
+    }
+}
+
+function fallbackShare(text) {
+    // 复制到剪贴板
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            showNotification('✅ 已复制到剪贴板，快去分享吧！');
+        }).catch(err => {
+            console.error('复制失败:', err);
+            showNotification('📋 请手动复制分享内容');
+        });
+    } else {
+        // 更老的浏览器兼容
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showNotification('✅ 已复制到剪贴板，快去分享吧！');
+        } catch (err) {
+            console.error('复制失败:', err);
+            showNotification('📋 请手动复制分享内容');
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
+// 更新歌曲来源信息显示
+function updateSongSource() {
+    const sourceInfo = document.getElementById('source-info');
+    const sourceText = sourceInfo.querySelector('.source-text');
+    const sourceIcon = sourceInfo.querySelector('.source-icon');
+    
+    if (gameState.songSource) {
+        const source = gameState.songSource;
+        let icon = '📀';
+        
+        switch (source.type) {
+            case 'daily':
+                icon = '📅';
+                break;
+            case 'favorite':
+                icon = '❤️';
+                break;
+            case 'hot':
+                icon = '🔥';
+                break;
+        }
+        
+        sourceIcon.textContent = icon;
+        sourceText.textContent = source.name;
+        
+        // 添加点击事件
+        sourceInfo.onclick = () => showLyricsSource();
+    } else {
+        sourceIcon.textContent = '📀';
+        sourceText.textContent = '经典歌曲合集';
+        sourceInfo.onclick = () => showLyricsSource();
+    }
+}
+
+function showLyricsSource() {
+    const sourceModal = document.getElementById('source-modal');
+    const sourceDetail = document.getElementById('source-detail');
+    
+    // 生成来源详情内容
+    const sourcesData = [
+        {
+            type: 'daily',
+            icon: '📅',
+            name: '每日30首推荐歌单',
+            description: '每日精选30首经典好歌，让您重温美好时光',
+            stats: { songs: '30首', update: '每日更新' },
+            active: gameState.songSource?.type === 'daily'
+        },
+        {
+            type: 'favorite',
+            icon: '❤️',
+            name: '我的收藏歌单',
+            description: '精心收藏的经典华语歌曲，承载着珍贵回忆',
+            stats: { songs: '99+首', update: '持续收藏' },
+            active: gameState.songSource?.type === 'favorite'
+        },
+        {
+            type: 'hot',
+            icon: '🔥',
+            name: '热门榜单',
+            description: '最受欢迎的华语经典，传唱度最高的金曲',
+            stats: { songs: '50首', update: '实时更新' },
+            active: gameState.songSource?.type === 'hot'
+        }
+    ];
+    
+    // 生成HTML内容
+    sourceDetail.innerHTML = sourcesData.map(source => `
+        <div class="source-card ${source.active ? 'active' : ''}" data-source="${source.type}">
+            <div class="source-header">
+                <span class="source-type-icon">${source.icon}</span>
+                <h3 class="source-name">${source.name}</h3>
+            </div>
+            <p class="source-description">${source.description}</p>
+            <div class="source-stats">
+                <span>收录：${source.stats.songs}</span>
+                <span>更新：${source.stats.update}</span>
+            </div>
+        </div>
+    `).join('');
+    
+    // 添加点击事件
+    sourceDetail.querySelectorAll('.source-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const sourceType = card.dataset.source;
+            handleSourceCardClick(sourceType);
+        });
+    });
+    
+    // 显示模态框
+    sourceModal.classList.remove('hidden');
+}
+
+function handleSourceCardClick(sourceType) {
+    const messages = {
+        daily: '📅 每日推荐歌单包含30首精选经典歌曲，每天为您推荐不同的怀旧金曲，让您在游戏中重温美好时光。',
+        favorite: '❤️ 我的收藏歌单收录了最受喜爱的华语经典，这些歌曲承载着无数人的青春回忆和情感故事。',
+        hot: '🔥 热门榜单汇集了传唱度最高的华语金曲，这些歌曲跨越时代，至今仍被广泛传唱。'
+    };
+    
+    showNotification(messages[sourceType] || '这是一个精选歌单，收录了优质的华语经典歌曲。');
+}
+
+function closeSourceModal() {
+    const sourceModal = document.getElementById('source-modal');
+    sourceModal.classList.add('hidden');
+}
+
+function showNotification(message) {
+    // 创建简单的通知提示
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 3000;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        transform: translateX(100%);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // 显示动画
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // 3秒后自动消失
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// 键盘事件处理
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const sourceModal = document.getElementById('source-modal');
+        if (!sourceModal.classList.contains('hidden')) {
+            closeSourceModal();
+        } else if (!lyricsCardModal.classList.contains('hidden')) {
+            closeLyricsCard();
+        }
+    }
 });

@@ -70,26 +70,26 @@ function loadLyricsDatabase() {
 // 获取默认歌词库
 function getDefaultLyrics() {
     return [
-        "青春如同奔流的江河",
-        "一路向北不能回头",
-        "最美不过初相见",
-        "岁月是朵两生花",
-        "时间都去哪儿了",
-        "那些年我们一起追的女孩",
-        "你是我心中最美的云彩",
-        "海阔天空在勇敢以后",
-        "梦想还是要有的",
-        "平凡之路孤独着前行",
-        "小幸运遇见了你",
-        "后来我们都长大了",
-        "匆匆那年我们来不及认真",
-        "红豆生南国春来发几枝",
-        "月亮代表我的心永远不变",
-        "往事只能回味不能重来",
-        "明天你好含着泪微笑",
-        "同桌的你现在好吗",
-        "外面的世界很精彩",
-        "爱如潮水将我包围"
+        { lyric: "青春如同奔流的江河", title: "青春", artist: "经典歌曲" },
+        { lyric: "一路向北不能回头", title: "一路向北", artist: "周杰伦" },
+        { lyric: "最美不过初相见", title: "初相见", artist: "经典歌曲" },
+        { lyric: "岁月是朵两生花", title: "两生花", artist: "经典歌曲" },
+        { lyric: "时间都去哪儿了", title: "时间都去哪儿了", artist: "王铮亮" },
+        { lyric: "那些年我们一起追的女孩", title: "那些年", artist: "胡夏" },
+        { lyric: "你是我心中最美的云彩", title: "最美的云彩", artist: "经典歌曲" },
+        { lyric: "海阔天空在勇敢以后", title: "海阔天空", artist: "Beyond" },
+        { lyric: "梦想还是要有的", title: "梦想", artist: "经典歌曲" },
+        { lyric: "平凡之路孤独着前行", title: "平凡之路", artist: "朴树" },
+        { lyric: "小幸运遇见了你", title: "小幸运", artist: "田馥甄" },
+        { lyric: "后来我们都长大了", title: "后来", artist: "刘若英" },
+        { lyric: "匆匆那年我们来不及认真", title: "匆匆那年", artist: "王菲" },
+        { lyric: "红豆生南国春来发几枝", title: "红豆", artist: "王菲" },
+        { lyric: "月亮代表我的心永远不变", title: "月亮代表我的心", artist: "邓丽君" },
+        { lyric: "往事只能回味不能重来", title: "往事只能回味", artist: "经典歌曲" },
+        { lyric: "明天你好含着泪微笑", title: "明天你好", artist: "牛奶咖啡" },
+        { lyric: "同桌的你现在好吗", title: "同桌的你", artist: "老狼" },
+        { lyric: "外面的世界很精彩", title: "外面的世界", artist: "齐秦" },
+        { lyric: "爱如潮水将我包围", title: "爱如潮水", artist: "张信哲" }
     ];
 }
 
@@ -107,6 +107,29 @@ function getTodayLyric() {
     }
     
     return currentGameState.dailyLyric;
+}
+
+// 获取今日歌词的文本部分
+function getTodayLyricText() {
+    const lyricObj = getTodayLyric();
+    return typeof lyricObj === 'string' ? lyricObj : lyricObj?.lyric || '';
+}
+
+// 获取今日歌词的完整信息
+function getTodayLyricInfo() {
+    const lyricObj = getTodayLyric();
+    if (typeof lyricObj === 'string') {
+        return {
+            lyric: lyricObj,
+            title: '经典歌词',
+            artist: '传世金曲'
+        };
+    }
+    return lyricObj || {
+        lyric: '',
+        title: '经典歌词',
+        artist: '传世金曲'
+    };
 }
 
 // 比较猜测和答案，返回颜色数组
@@ -195,21 +218,25 @@ function generateHintChars(lyric) {
 // API路由：获取游戏状态
 app.get('/api/game-state', (req, res) => {
     try {
-        const todayLyric = getTodayLyric();
+        const todayLyricInfo = getTodayLyricInfo();
+        const todayLyricText = todayLyricInfo.lyric;
         
-        if (!todayLyric) {
+        if (!todayLyricText) {
             return res.status(500).json({
                 success: false,
                 message: '无法获取今日歌词'
             });
         }
         
-        const hintChars = generateHintChars(todayLyric);
+        const hintChars = generateHintChars(todayLyricText);
         
         res.json({
             success: true,
-            lyric: todayLyric,
-            length: todayLyric.length,
+            lyric: todayLyricText,
+            title: todayLyricInfo.title,
+            artist: todayLyricInfo.artist,
+            source: todayLyricInfo.source,
+            length: todayLyricText.length,
             hintChars: hintChars
         });
     } catch (error) {
@@ -234,7 +261,7 @@ app.post('/api/guess', (req, res) => {
             });
         }
         
-        const target = getTodayLyric();
+        const target = getTodayLyricText();
         
         if (!target) {
             return res.status(500).json({
@@ -297,12 +324,17 @@ app.post('/api/new-game', (req, res) => {
             currentGameState.dailyLyric = lyricsDatabase[randomIndex];
         }
         
-        const hintChars = generateHintChars(currentGameState.dailyLyric);
+        const todayLyricInfo = getTodayLyricInfo();
+        const todayLyricText = todayLyricInfo.lyric;
+        const hintChars = generateHintChars(todayLyricText);
         
         res.json({
             success: true,
-            lyric: currentGameState.dailyLyric,
-            length: currentGameState.dailyLyric.length,
+            lyric: todayLyricText,
+            title: todayLyricInfo.title,
+            artist: todayLyricInfo.artist,
+            source: todayLyricInfo.source,
+            length: todayLyricText.length,
             hintChars: hintChars
         });
     } catch (error) {
@@ -361,8 +393,8 @@ function startServer() {
         console.log(`📱 手机/平板访问: http://${localIP}:${PORT}`);
         
         // 设置今日歌词
-        const todayLyric = getTodayLyric();
-        console.log(`📝 今日歌词: "${todayLyric}"`);
+        const todayLyricInfo = getTodayLyricInfo();
+        console.log(`📝 今日歌词: "${todayLyricInfo.lyric}" - ${todayLyricInfo.title} (${todayLyricInfo.artist})`);
     });
 }
 

@@ -528,3 +528,536 @@ header h1 {
 .letter-box.success-bounce {
     animation: successBounce 0.8s ease;
 }
+
+/* 歌词卡弹窗样式 */
+.lyrics-card-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.lyrics-card-modal:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
+.lyrics-card-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+}
+
+.lyrics-card {
+    position: relative;
+    max-width: 500px;
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.lyrics-card-modal:not(.hidden) .lyrics-card {
+    transform: scale(1);
+}
+
+.lyrics-card-header {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.music-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.lyrics-card-title {
+    color: white;
+    font-size: 1.8em;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.lyrics-card-content {
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.lyrics-display {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.lyrics-quote {
+    font-size: 4em;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+    line-height: 0.5;
+    position: absolute;
+    font-family: serif;
+}
+
+.lyrics-quote:first-child {
+    top: -10px;
+    left: 10px;
+}
+
+.lyrics-quote:last-child {
+    bottom: -20px;
+    right: 10px;
+    transform: rotate(180deg);
+}
+
+.lyrics-text {
+    color: white;
+    font-size: 1.4em;
+    font-weight: 500;
+    line-height: 1.6;
+    padding: 20px 40px;
+    position: relative;
+    z-index: 1;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    word-spacing: 0.1em;
+    letter-spacing: 0.05em;
+}
+
+.song-info {
+    margin-bottom: 20px;
+}
+
+.song-meta {
+    margin-bottom: 15px;
+}
+
+.song-title {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.song-artist {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95em;
+    font-style: italic;
+}
+
+.decorative-line {
+    width: 60px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.4);
+    margin: 0 auto;
+    border-radius: 1px;
+}
+
+.lyrics-card-actions {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn.primary {
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
+    font-weight: 600;
+}
+
+.action-btn.primary:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn.secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.btn-icon {
+    font-size: 1.1em;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .lyrics-card {
+        margin: 10px;
+        max-width: none;
+    }
+    
+    .lyrics-text {
+        font-size: 1.2em;
+        padding: 15px 25px;
+    }
+    
+    .lyrics-card-actions {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .lyrics-card-header {
+        padding: 15px;
+    }
+    
+    .lyrics-card-title {
+        font-size: 1.5em;
+    }
+    
+    .lyrics-text {
+        font-size: 1.1em;
+        padding: 15px 20px;
+    }
+    
+    .lyrics-quote {
+        font-size: 3em;
+    }
+}
+
+/* 歌曲来源样式 */
+.song-source {
+    margin-top: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.source-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.source-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.source-info:hover {
+    background: rgba(255,255,255,0.95);
+    border-color: rgba(102,126,234,0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.source-icon {
+    font-size: 1.2em;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+.source-text {
+    font-weight: 500;
+    color: #333;
+    font-size: 0.95em;
+}
+
+/* 歌曲来源详情弹窗样式 */
+.source-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.source-modal:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
+.source-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+}
+
+.source-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.source-modal:not(.hidden) .source-modal-content {
+    transform: scale(1);
+}
+
+.source-modal-header {
+    padding: 25px 30px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: relative;
+}
+
+.source-modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+.source-modal-header .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.source-modal-header .close-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+.source-modal-body {
+    padding: 25px 30px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.source-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.source-card {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+    border-radius: 15px;
+    padding: 20px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.source-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.source-card:hover {
+    border-color: rgba(102,126,234,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.source-card.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.source-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.source-type-icon {
+    font-size: 1.8em;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.source-name {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0;
+}
+
+.source-description {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin: 0;
+    padding-left: 42px;
+}
+
+.source-card.active .source-description {
+    opacity: 0.9;
+}
+
+.source-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    font-size: 0.85em;
+    opacity: 0.7;
+}
+
+.source-card.active .source-stats {
+    border-top-color: rgba(255,255,255,0.3);
+    opacity: 0.9;
+}
+
+.source-modal-actions {
+    padding: 20px 30px 25px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: center;
+}
+
+.source-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 0.95em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.source-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102,126,234,0.3);
+}
+
+/* 响应式设计 - 来源弹窗 */
+@media (max-width: 768px) {
+    .source-modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .source-modal-header,
+    .source-modal-body,
+    .source-modal-actions {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .source-card {
+        padding: 15px;
+    }
+    
+    .source-description {
+        padding-left: 35px;
+    }
+}

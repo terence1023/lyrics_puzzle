@@ -74,6 +74,82 @@
                     <button onclick="newGame()">开始新游戏</button>
                 </div>
             </div>
+
+            <!-- 歌词卡弹窗 -->
+            <div id="lyrics-card-modal" class="lyrics-card-modal hidden">
+                <div class="lyrics-card-backdrop" onclick="closeLyricsCard()"></div>
+                <div class="lyrics-card">
+                    <div class="lyrics-card-header">
+                        <div class="music-icon">🎵</div>
+                        <h2 class="lyrics-card-title">恭喜猜对！</h2>
+                        <button class="close-btn" onclick="closeLyricsCard()">×</button>
+                    </div>
+                    
+                    <div class="lyrics-card-content">
+                        <div class="lyrics-display">
+                            <div class="lyrics-quote">"</div>
+                            <div id="lyrics-text" class="lyrics-text"></div>
+                            <div class="lyrics-quote">"</div>
+                        </div>
+                        
+                        <div class="song-info">
+                            <div class="song-meta">
+                                <div id="song-title" class="song-title">经典歌词</div>
+                                <div id="song-artist" class="song-artist">传世金曲</div>
+                            </div>
+                            <div class="decorative-line"></div>
+                        </div>
+                        
+                        <!-- 歌曲来源信息 -->
+                        <div id="song-source" class="song-source">
+                            <div class="source-label">歌曲来源</div>
+                            <div id="source-info" class="source-info">
+                                <span class="source-icon">📀</span>
+                                <span class="source-text">加载中...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lyrics-card-actions">
+                        <button class="action-btn primary" onclick="newGame()">
+                            <span class="btn-icon">🎮</span>
+                            开始新游戏
+                        </button>
+                        <button class="action-btn secondary" onclick="shareLyrics()">
+                            <span class="btn-icon">📤</span>
+                            分享
+                        </button>
+                        <button class="action-btn secondary" onclick="showLyricsSource()">
+                            <span class="btn-icon">ℹ️</span>
+                            歌单详情
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 歌曲来源详情弹窗 -->
+            <div id="source-modal" class="source-modal hidden">
+                <div class="source-modal-backdrop" onclick="closeSourceModal()"></div>
+                <div class="source-modal-content">
+                    <div class="source-modal-header">
+                        <h2 id="source-modal-title">歌单详情</h2>
+                        <button class="close-btn" onclick="closeSourceModal()">×</button>
+                    </div>
+                    
+                    <div class="source-modal-body">
+                        <div id="source-detail" class="source-detail">
+                            <!-- 动态内容将在这里填充 -->
+                        </div>
+                    </div>
+                    
+                    <div class="source-modal-actions">
+                        <button class="source-btn" onclick="closeSourceModal()">
+                            <span class="btn-icon">👍</span>
+                            好的
+                        </button>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <footer>
