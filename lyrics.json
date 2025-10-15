@@ -3,6 +3,8 @@
     "lyric": "甜蜜蜜你笑得甜蜜蜜",
     "title": "甜蜜蜜",
     "artist": "邓丽君",
+    "audioFile": "甜蜜蜜.mp3",
+    "imageFile": "甜蜜蜜你笑得甜蜜蜜.jpeg",
     "source": {
       "type": "favorite",
       "name": "我的收藏歌单",
@@ -13,6 +15,8 @@
     "lyric": "三分天注定七分靠打拼",
     "title": "爱拼才会赢",
     "artist": "叶启田",
+    "audioFile": "爱拼才会赢.mp3",
+    "imageFile": "三分天注定七分靠打拼.jpeg",
     "source": {
       "type": "hot",
       "name": "热门榜单",
@@ -23,6 +27,8 @@
     "lyric": "今天我寒夜里看雪飘过",
     "title": "海阔天空",
     "artist": "Beyond",
+    "audioFile": "海阔天空.mp3",
+    "imageFile": "今天我寒夜里看雪飘过.jpeg",
     "source": {
       "type": "favorite",
       "name": "我的收藏歌单",
@@ -33,6 +39,8 @@
     "lyric": "喜欢你那双眼动人",
     "title": "喜欢你",
     "artist": "Beyond",
+    "audioFile": "喜欢你.mp3",
+    "imageFile": "喜欢你那双眼动人.jpeg",
     "source": {
       "type": "favorite",
       "name": "我的收藏歌单",
@@ -43,6 +51,8 @@
     "lyric": "我和我的祖国一刻也不能分割",
     "title": "我和我的祖国",
     "artist": "华语群星",
+    "audioFile": "我和我的祖国.mp3",
+    "imageFile": "我和我的祖国一刻也不能分割.jpeg",
     "source": {
       "type": "favorite",
       "name": "我的收藏歌单",
@@ -53,6 +63,8 @@
     "lyric": "我曾经拥有着的一切",
     "title": "平凡之路",
     "artist": "朴树",
+    "audioFile": "平凡之路.mp3",
+    "imageFile": "我曾经拥有着的一切.jpeg",
     "source": {
       "type": "daily",
       "name": "每日30首推荐歌单",
@@ -63,6 +75,8 @@
     "lyric": "明天你是否会想起",
     "title": "同桌的你",
     "artist": "老狼",
+    "audioFile": "同桌的你.mp3",
+    "imageFile": "明天你是否会想起.jpeg",
     "source": {
       "type": "hot",
       "name": "热门榜单",
@@ -73,6 +87,8 @@
     "lyric": "朋友一生一起走",
     "title": "朋友",
     "artist": "周华健",
+    "audioFile": "朋友.mp3",
+    "imageFile": "朋友一生一起走.jpeg",
     "source": {
       "type": "favorite",
       "name": "我的收藏歌单",
@@ -83,6 +99,8 @@
     "lyric": "古老的东方有一条龙",
     "title": "龙的传人",
     "artist": "王力宏",
+    "audioFile": "龙的传人.mp3",
+    "imageFile": "古老的东方有一条龙.jpeg",
     "source": {
       "type": "favorite",
       "name": "我的收藏歌单",
@@ -93,6 +111,8 @@
     "lyric": "你在南方的艳阳里大雪纷飞",
     "title": "南山南",
     "artist": "马頔",
+    "audioFile": "南山南.mp3",
+    "imageFile": "你在南方的艳阳里大雪纷飞.jpeg",
     "source": {
       "type": "hot",
       "name": "热门榜单",

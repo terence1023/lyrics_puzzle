@@ -9,6 +9,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
+// 为素材目录提供静态文件服务
+app.use('/素材', express.static(path.join(__dirname, '素材')));
+
 // 歌词库
 let lyricsDatabase = [];
 
@@ -93,8 +96,24 @@ function getDefaultLyrics() {
     ];
 }
 
+// 获取歌词（基于seed）
+function getLyricBySeed(seed) {
+    if (lyricsDatabase.length === 0) {
+        return null;
+    }
+    
+    // 使用seed来确定选择哪首歌
+    const index = seed % lyricsDatabase.length;
+    return lyricsDatabase[index];
+}
+
 // 获取今日歌词（这里简化为随机选择）
-function getTodayLyric() {
+function getTodayLyric(seed = null) {
+    // 如果提供了seed，使用seed选择歌词
+    if (seed !== null) {
+        return getLyricBySeed(seed);
+    }
+    
     const today = new Date().toDateString();
     
     // 如果是新的一天或者还没有设置今日歌词，则重新选择
@@ -110,25 +129,31 @@ function getTodayLyric() {
 }
 
 // 获取今日歌词的文本部分
-function getTodayLyricText() {
-    const lyricObj = getTodayLyric();
+function getTodayLyricText(seed = null) {
+    const lyricObj = getTodayLyric(seed);
     return typeof lyricObj === 'string' ? lyricObj : lyricObj?.lyric || '';
 }
 
 // 获取今日歌词的完整信息
-function getTodayLyricInfo() {
-    const lyricObj = getTodayLyric();
+function getTodayLyricInfo(seed = null) {
+    const lyricObj = getTodayLyric(seed);
     if (typeof lyricObj === 'string') {
         return {
             lyric: lyricObj,
             title: '经典歌词',
-            artist: '传世金曲'
+            artist: '传世金曲',
+            audioFile: '',
+            imageFile: '',
+            source: null
         };
     }
     return lyricObj || {
         lyric: '',
         title: '经典歌词',
-        artist: '传世金曲'
+        artist: '传世金曲',
+        audioFile: '',
+        imageFile: '',
+        source: null
     };
 }
 
@@ -218,7 +243,10 @@ function generateHintChars(lyric) {
 // API路由：获取游戏状态
 app.get('/api/game-state', (req, res) => {
     try {
-        const todayLyricInfo = getTodayLyricInfo();
+        // 从查询参数获取seed
+        const seed = req.query.seed ? parseInt(req.query.seed) : null;
+        
+        const todayLyricInfo = getTodayLyricInfo(seed);
         const todayLyricText = todayLyricInfo.lyric;
         
         if (!todayLyricText) {
@@ -236,6 +264,8 @@ app.get('/api/game-state', (req, res) => {
             title: todayLyricInfo.title,
             artist: todayLyricInfo.artist,
             source: todayLyricInfo.source,
+            audioFile: todayLyricInfo.audioFile,
+            imageFile: todayLyricInfo.imageFile,
             length: todayLyricText.length,
             hintChars: hintChars
         });
@@ -251,7 +281,7 @@ app.get('/api/game-state', (req, res) => {
 // API路由：处理猜测
 app.post('/api/guess', (req, res) => {
     try {
-        const { guess } = req.body;
+        const { guess, seed } = req.body;
         
         // 验证输入
         if (!guess || typeof guess !== 'string') {
@@ -261,7 +291,9 @@ app.post('/api/guess', (req, res) => {
             });
         }
         
-        const target = getTodayLyricText();
+        // 使用seed获取对应的歌词
+        const seedValue = seed ? parseInt(seed) : null;
+        const target = getTodayLyricText(seedValue);
         
         if (!target) {
             return res.status(500).json({
@@ -318,23 +350,44 @@ app.post('/api/new-game', (req, res) => {
         // 清理使用过的提示字符，让新游戏可以使用不同的提示字符
         currentGameState.usedHintChars.clear();
         
-        // 重新选择歌词
+        // 强制重新选择新的歌词（不受日期限制）
         if (lyricsDatabase.length > 0) {
             const randomIndex = Math.floor(Math.random() * lyricsDatabase.length);
-            currentGameState.dailyLyric = lyricsDatabase[randomIndex];
+            const newLyric = lyricsDatabase[randomIndex];
+            currentGameState.dailyLyric = newLyric;
+            // 更新时间戳为当前时间+随机数，确保每次都是新的
+            currentGameState.lastUpdate = new Date().toISOString() + Math.random();
         }
         
-        const todayLyricInfo = getTodayLyricInfo();
-        const todayLyricText = todayLyricInfo.lyric;
-        const hintChars = generateHintChars(todayLyricText);
+        const newLyricInfo = currentGameState.dailyLyric;
+        const newLyricText = typeof newLyricInfo === 'string' ? newLyricInfo : newLyricInfo?.lyric || '';
+        
+        // 确保新歌词有效
+        if (!newLyricText) {
+            throw new Error('无法获取新歌词');
+        }
+        
+        const hintChars = generateHintChars(newLyricText);
+        
+        // 返回新歌词的完整信息
+        const responseData = typeof newLyricInfo === 'string' ? {
+            lyric: newLyricInfo,
+            title: '经典歌词', 
+            artist: '传世金曲',
+            audioFile: '',
+            imageFile: '',
+            source: null
+        } : newLyricInfo;
         
         res.json({
             success: true,
-            lyric: todayLyricText,
-            title: todayLyricInfo.title,
-            artist: todayLyricInfo.artist,
-            source: todayLyricInfo.source,
-            length: todayLyricText.length,
+            lyric: responseData.lyric,
+            title: responseData.title,
+            artist: responseData.artist,
+            source: responseData.source,
+            audioFile: responseData.audioFile,
+            imageFile: responseData.imageFile,
+            length: responseData.lyric.length,
             hintChars: hintChars
         });
     } catch (error) {

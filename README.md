@@ -12,23 +12,81 @@
 
 ## 🚀 快速开始
 
-### 安装依赖
+### 方法一：一键部署（推荐）
+
+#### 1. 无警告页面部署
+```bash
+# 使用修改后的部署脚本（已禁用ngrok警告页面）
+./deploy.sh
+
+# 或者使用LocalTunnel（完全无警告页面）
+./deploy-localtunnel.sh
+
+# 或者使用交互式部署脚本
+./deploy-quick.sh
+```
+
+#### 2. 部署选项说明
+
+**选项1: ngrok（已优化）**
+- 运行 `./deploy.sh` - 已添加 `--inspect=false` 参数禁用警告页面
+- 提供本地、局域网和公网访问地址
+- 需要ngrok账户和认证令牌
+
+**选项2: LocalTunnel（推荐）**
+- 运行 `./deploy-localtunnel.sh` 
+- 完全无警告页面，可直接访问
+- 无需注册账户
+- URL格式：`https://xxx.loca.lt`
+
+**选项3: 交互式部署**
+- 运行 `./deploy-quick.sh`
+- 提供多种部署方式选择
+- 包含其他免费内网穿透工具推荐
+
+### 方法二：手动部署
+
+#### 安装依赖
 ```bash
 npm install
 ```
 
-### 启动开发服务器
+#### 启动开发服务器
 ```bash
 npm run dev
 ```
 
-### 启动生产服务器
+#### 启动生产服务器
 ```bash
 npm start
 ```
 
-### 访问游戏
+#### 访问游戏
 打开浏览器访问 `http://localhost:3000`
+
+### 🌐 避免ngrok警告页面的方法
+
+如果使用ngrok遇到"You are about to visit"警告页面，可以：
+
+1. **使用优化后的部署脚本**（推荐）：
+   ```bash
+   ./deploy.sh  # 已添加 --inspect=false 参数
+   ```
+
+2. **使用LocalTunnel替代**（最简单）：
+   ```bash
+   npm install -g localtunnel  # 全局安装
+   ./deploy-localtunnel.sh     # 运行部署脚本
+   ```
+
+3. **手动添加参数**：
+   ```bash
+   ngrok http 3001 --inspect=false
+   ```
+
+4. **其他免费替代方案**：
+   - **Serveo**: `ssh -R 80:localhost:3001 serveo.net`
+   - **Cloudflare Tunnel**: `cloudflared tunnel --url http://localhost:3001`
 
 ## 📁 项目结构
 

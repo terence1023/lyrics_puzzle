@@ -74,9 +74,12 @@ if ! ps -p $SERVER_PID > /dev/null; then
     exit 1
 fi
 
-# 启动ngrok隧道
+# 启动ngrok隧道（尝试禁用警告页面）
 echo "🌐 启动ngrok隧道..."
-ngrok http $PORT --log=stdout > ngrok.log 2>&1 &
+echo "⚠️  注意：ngrok免费版可能仍会显示警告页面"
+echo "💡 建议使用LocalTunnel替代: ./deploy-localtunnel.sh"
+# 尝试多种参数组合来禁用警告页面
+ngrok http $PORT --inspect=false --log=stdout > ngrok.log 2>&1 &
 NGROK_PID=$!
 
 # 等待ngrok启动

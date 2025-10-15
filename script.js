@@ -4,6 +4,8 @@ let gameState = {
     songTitle: '',             // 歌曲名称
     songArtist: '',            // 歌手名称
     songSource: null,          // 歌曲来源信息
+    audioFile: '',             // 音频文件名
+    imageFile: '',             // 图片文件名
     currentRow: 0,             // 当前行数
     maxAttempts: 6,            // 最大尝试次数
     gameOver: false,           // 游戏是否结束
@@ -30,8 +32,12 @@ const songArtist = document.getElementById('song-artist');
 // 游戏初始化
 async function initGame() {
     try {
-        // 从后端获取游戏状态
-        const response = await fetch('/api/game-state');
+        // 从URL获取seed参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const seed = urlParams.get('seed') || Date.now();
+        
+        // 从后端获取游戏状态，传递seed参数
+        const response = await fetch(`/api/game-state?seed=${seed}`);
         const data = await response.json();
         
         if (data.success) {
@@ -39,6 +45,8 @@ async function initGame() {
             gameState.songTitle = data.title || '经典歌词';
             gameState.songArtist = data.artist || '传世金曲';
             gameState.songSource = data.source || null;
+            gameState.audioFile = data.audioFile || '';
+            gameState.imageFile = data.imageFile || '';
             gameState.hintChars = data.hintChars;
             gameState.charStates.clear(); // 清除字符状态
             setupGameGrid();
@@ -212,13 +220,17 @@ async function submitGuess() {
         // 禁用提交按钮
         submitBtn.disabled = true;
         
+        // 获取URL中的seed参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const seed = urlParams.get('seed') || Date.now();
+        
         // 发送猜测到后端
         const response = await fetch('/api/guess', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ guess })
+            body: JSON.stringify({ guess, seed })
         });
         
         const data = await response.json();
@@ -336,68 +348,11 @@ function endGame(won, message) {
     gameModal.classList.remove('hidden');
 }
 
-// 开始新游戏
+// 开始新游戏（刷新页面）
 async function newGame() {
-    try {
-        // 关闭当前播放的音乐
-        const songAudio = document.getElementById('song-audio');
-        if (songAudio && !songAudio.paused) {
-            songAudio.pause();
-            songAudio.currentTime = 0;
-        }
-        
-        // 重置游戏状态
-        gameState.currentRow = 0;
-        gameState.gameOver = false;
-        gameState.won = false;
-        gameState.charStates.clear(); // 清除字符状态
-        
-        // 隐藏弹窗
-        gameModal.classList.add('hidden');
-        
-        // 优雅地关闭歌词卡
-        if (!lyricsCardModal.classList.contains('hidden')) {
-            lyricsCardModal.classList.add('closing');
-            setTimeout(() => {
-                lyricsCardModal.classList.add('hidden');
-                lyricsCardModal.classList.remove('closing');
-            }, 300);
-        }
-        
-        // 从服务器获取新的游戏数据
-        const response = await fetch('/api/new-game', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            gameState.targetLyric = data.lyric;
-            gameState.songTitle = data.title || '经典歌词';
-            gameState.songArtist = data.artist || '传世金曲';
-            gameState.songSource = data.source || null;
-            gameState.hintChars = data.hintChars;
-            setupGameGrid();
-            setupHintChars();
-            
-            // 重置游戏状态显示
-            const statusElement = document.getElementById('game-status');
-            statusElement.innerHTML = ``;
-        } else {
-            throw new Error(data.message || '获取新游戏数据失败');
-        }
-        
-        // 清空输入框并更新计数器
-        guessInput.value = '';
-        updateCharCounter();
-        guessInput.focus();
-    } catch (error) {
-        console.error('开始新游戏失败:', error);
-        showError('开始新游戏失败，请刷新页面重试');
-    }
+    // 使用时间戳作为seed，确保每次刷新获得不同的题目
+    const timestamp = Date.now();
+    location.href = `${location.pathname}?seed=${timestamp}`;
 }
 
 // 显示错误信息
@@ -440,45 +395,115 @@ function showLyricsCard() {
 // 设置歌词图片展示
 function setupLyricsImage() {
     const lyricsImage = document.getElementById('lyrics-image');
+    const imageContainer = lyricsImage.parentNode;
     
-    // 设置图片路径 - 根据歌曲标题获取对应图片
-    const imageName = getSongImageName(gameState.songTitle);
-    lyricsImage.src = `file/${imageName}`;
+    // 清理之前的错误提示
+    const existingErrorDiv = imageContainer.querySelector('.lyrics-image-error');
+    if (existingErrorDiv) {
+        existingErrorDiv.remove();
+    }
+    
+    // 重置图片显示状态
+    lyricsImage.style.display = 'block';
+    
+    // 使用游戏状态中的图片文件名，如果没有则使用默认方式
+    const imageName = gameState.imageFile || getSongImageName(gameState.songTitle);
+    const imageUrl = `素材/${encodeURIComponent(imageName)}`;
+    
+    console.log('尝试加载图片:', imageUrl);
+    console.log('游戏状态中的图片文件名:', gameState.imageFile);
+    lyricsImage.src = imageUrl;
+    
+    // 图片加载成功时的处理
+    lyricsImage.onload = function() {
+        console.log('图片加载成功:', imageName);
+        lyricsImage.style.display = 'block';
+    };
     
     // 图片加载错误时的处理
     lyricsImage.onerror = function() {
-        // 如果图片不存在，显示错误消息
-        console.log('图片加载失败:', imageName);
-        lyricsImage.alt = '图片加载失败';
-        lyricsImage.style.display = 'block';
-        lyricsImage.style.minHeight = '300px';
-        lyricsImage.style.background = '#f0f0f0';
+        console.log('图片加载失败:', imageName, '尝试备用方案');
+        
+        // 尝试不同的文件扩展名
+        if (imageName.endsWith('.jpeg')) {
+            const jpgName = imageName.replace('.jpeg', '.jpg');
+            const jpgUrl = `素材/${encodeURIComponent(jpgName)}`;
+            console.log('尝试JPG格式:', jpgUrl);
+            lyricsImage.src = jpgUrl;
+            
+            // 设置JPG格式的错误处理
+            lyricsImage.onerror = function() {
+                console.log('JPG格式也失败，尝试PNG格式');
+                const pngName = imageName.replace('.jpeg', '.png');
+                const pngUrl = `素材/${encodeURIComponent(pngName)}`;
+                console.log('尝试PNG格式:', pngUrl);
+                lyricsImage.src = pngUrl;
+                
+                // 设置PNG格式的错误处理
+                lyricsImage.onerror = function() {
+                    console.log('所有格式都失败，显示备用方案');
+                    showFallbackImage();
+                };
+            };
+        } else if (imageName.endsWith('.jpg')) {
+            const pngName = imageName.replace('.jpg', '.png');
+            const pngUrl = `素材/${encodeURIComponent(pngName)}`;
+            console.log('尝试PNG格式:', pngUrl);
+            lyricsImage.src = pngUrl;
+            
+            lyricsImage.onerror = function() {
+                console.log('PNG格式也失败，显示备用方案');
+                showFallbackImage();
+            };
+        } else {
+            showFallbackImage();
+        }
     };
+    
+    // 显示备用图片的函数
+    function showFallbackImage() {
+        lyricsImage.style.display = 'none';
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'lyrics-image-error';
+        errorDiv.innerHTML = `
+            <div style="
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                min-height: 300px; 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                color: white; 
+                text-align: center;
+                border-radius: 8px;
+                font-size: 18px;
+            ">
+                <div>
+                    <div style="font-size: 48px; margin-bottom: 10px;">🎵</div>
+                    <div>${gameState.targetLyric}</div>
+                    <div style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+                        ${gameState.songTitle} - ${gameState.songArtist}
+                    </div>
+                </div>
+            </div>
+        `;
+        imageContainer.appendChild(errorDiv);
+    }
 }
 
-// 根据歌曲标题获取图片名称
+// 根据歌曲标题获取图片名称 (备用方法)
 function getSongImageName(songTitle) {
-    // 文件映射表 - 可以根据需要添加更多歌曲
-    const imageMap = {
-        '一路向北': '一路向北.png',
-        // 未来可以添加更多歌曲的图片映射
-        // '歌曲名': '图片文件名.png',
-    };
+    // 如果没有指定图片文件，尝试根据歌曲标题推断
+    const commonImageExtensions = ['.jpeg', '.jpg', '.png'];
     
-    // 首先尝试精确匹配
-    if (imageMap[songTitle]) {
-        return imageMap[songTitle];
+    // 尝试不同的文件扩展名
+    for (const ext of commonImageExtensions) {
+        const filename = `${songTitle}${ext}`;
+        // 这里只是返回可能的文件名，实际验证在图片加载时进行
+        return filename;
     }
     
-    // 如果没有精确匹配，尝试模糊匹配
-    for (const [title, filename] of Object.entries(imageMap)) {
-        if (songTitle.includes(title) || title.includes(songTitle)) {
-            return filename;
-        }
-    }
-    
-    // 默认使用一路向北的图片
-    return '一路向北.png';
+    // 默认返回 jpeg 格式
+    return `${songTitle}.jpeg`;
 }
 
 // 设置音频播放器
@@ -489,19 +514,40 @@ function setupAudioPlayer() {
     const musicIcon = document.getElementById('music-icon');
     const musicControlText = document.getElementById('music-control-text');
     
-    // 设置音频路径
-    const audioName = getSongAudioName(gameState.songTitle);
-    audioSource.src = `file/${audioName}`;
+    // 使用游戏状态中的音频文件名，如果没有则使用默认方式
+    const audioName = gameState.audioFile || getSongAudioName(gameState.songTitle);
+    audioSource.src = `素材/${audioName}`;
     
     // 重新加载音频
     songAudio.load();
     
     // 初始化按钮状态
-    musicIcon.textContent = '🎵';
-    musicControlText.textContent = '播放';
-    musicControlBtn.classList.remove('muted');
+    musicIcon.textContent = '⏳';
+    musicControlText.textContent = '加载中';
+    musicControlBtn.classList.add('muted');
     
-    // 监听音频事件
+    // 监听音频加载事件
+    songAudio.addEventListener('loadstart', () => {
+        musicIcon.textContent = '⏳';
+        musicControlText.textContent = '加载中';
+        musicControlBtn.classList.add('muted');
+    });
+    
+    songAudio.addEventListener('canplay', () => {
+        musicIcon.textContent = '🎵';
+        musicControlText.textContent = '播放';
+        musicControlBtn.classList.remove('muted');
+        console.log('音频可以播放:', audioName);
+    });
+    
+    songAudio.addEventListener('error', (e) => {
+        console.log('音频加载失败:', audioName, e);
+        musicIcon.textContent = '❌';
+        musicControlText.textContent = '无音频';
+        musicControlBtn.classList.add('muted');
+    });
+    
+    // 监听播放状态事件
     songAudio.addEventListener('ended', () => {
         musicIcon.textContent = '🎵';
         musicControlText.textContent = '播放';
@@ -533,29 +579,10 @@ function setupAudioPlayer() {
     }, 1000);
 }
 
-// 根据歌曲标题获取音频文件名称
+// 根据歌曲标题获取音频文件名称 (备用方法)
 function getSongAudioName(songTitle) {
-    // 音频文件映射表
-    const audioMap = {
-        '一路向北': '一路向北.mp3',
-        // 未来可以添加更多歌曲的音频映射
-        // '歌曲名': '音频文件名.mp3',
-    };
-    
-    // 首先尝试精确匹配
-    if (audioMap[songTitle]) {
-        return audioMap[songTitle];
-    }
-    
-    // 如果没有精确匹配，尝试模糊匹配
-    for (const [title, filename] of Object.entries(audioMap)) {
-        if (songTitle.includes(title) || title.includes(songTitle)) {
-            return filename;
-        }
-    }
-    
-    // 默认使用一路向北的音频
-    return '一路向北.mp3';
+    // 如果没有指定音频文件，直接根据歌曲标题生成文件名
+    return `${songTitle}.mp3`;
 }
 
 // 音频播放切换功能
@@ -586,14 +613,16 @@ function toggleAudio() {
 
 // 测试函数 - 直接显示歌词卡
 function testLyricsCard() {
-    // 设置测试数据
-    gameState.targetLyric = "我一路向北离开有你的季节";
-    gameState.songTitle = "一路向北";
-    gameState.songArtist = "周杰伦";
+    // 设置测试数据 - 使用素材目录中的第一个歌曲
+    gameState.targetLyric = "甜蜜蜜你笑得甜蜜蜜";
+    gameState.songTitle = "甜蜜蜜";
+    gameState.songArtist = "邓丽君";
+    gameState.audioFile = "甜蜜蜜.mp3";
+    gameState.imageFile = "甜蜜蜜你笑得甜蜜蜜.jpeg";
     gameState.songSource = {
-        type: 'daily',
-        name: '每日30首推荐歌单',
-        description: '今日精选经典老歌'
+        type: 'favorite',
+        name: '我的收藏歌单',
+        description: '个人珍藏经典'
     };
     
     // 显示歌词卡
