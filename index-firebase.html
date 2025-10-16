@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrics Puzzle - Firebase版本</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 今日通过人数统计面板 -->
+        <div class="daily-stats-panel">
+            <div class="stats-icon">🏆</div>
+            <div class="stats-content">
+                <div class="stats-label">今日全球通过</div>
+                <div class="stats-number" id="daily-wins">...</div>
+            </div>
+        </div>
+
+        <header>
+            <h1><span class="music-note">♪</span> Lyrics Puzzle <span class="music-note">♪</span></h1>
+            <p class="subtitle">猜出今日的歌词！你有6次机会</p>
+            
+            <div class="rules-quick">
+                <div class="rule-quick">
+                    <span class="color-indicator correct"></span>
+                    <span>正确</span>
+                </div>
+                <div class="rule-quick">
+                    <span class="color-indicator present"></span>
+                    <span>位置错误</span>
+                </div>
+                <div class="rule-quick">
+                    <span class="color-indicator absent"></span>
+                    <span>不存在</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="game-grid" class="game-grid"></div>
+            
+            <div class="input-section">
+                <div class="input-container">
+                    <input 
+                        type="text" 
+                        id="guess-input" 
+                        placeholder="猜猜这句歌词..." 
+                        maxlength="50"
+                        autocomplete="off"
+                    >
+                    <span id="char-counter" class="char-counter">还需0字</span>
+                </div>
+                <button id="submit-btn" onclick="submitGuess()">🎵 提交</button>
+            </div>
+
+            <div class="hint-section">
+                <h3>提示汉字</h3>
+                <div id="hint-chars" class="hint-chars"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get, set, runTransaction } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // Firebase 配置（请替换为你自己的配置）
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // 获取今日日期
+        function getTodayKey() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        // 获取今日通过人数
+        async function getTodayWins() {
+            const today = getTodayKey();
+            const winsRef = ref(database, `dailyStats/${today}`);
+            const snapshot = await get(winsRef);
+            return snapshot.val() || 0;
+        }
+
+        // 更新显示
+        async function updateDisplay() {
+            const wins = await getTodayWins();
+            document.getElementById('daily-wins').textContent = wins;
+        }
+
+        // 记录通关（使用事务确保原子性）
+        async function recordWin() {
+            const today = getTodayKey();
+            const localKey = `recorded_${today}`;
+            
+            // 检查本地是否已记录
+            if (localStorage.getItem(localKey)) {
+                console.log('今日已记录');
+                return;
+            }
+
+            const winsRef = ref(database, `dailyStats/${today}`);
+            
+            await runTransaction(winsRef, (currentValue) => {
+                return (currentValue || 0) + 1;
+            });
+
+            localStorage.setItem(localKey, 'true');
+            await updateDisplay();
+        }
+
+        // 导出到全局作用域
+        window.firebaseStats = {
+            getTodayWins,
+            recordWin,
+            updateDisplay
+        };
+
+        // 初始化
+        updateDisplay();
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
