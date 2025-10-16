@@ -30,6 +30,89 @@ const lyricsCardModal = document.getElementById('lyrics-card-modal');
 const songTitle = document.getElementById('song-title');
 const songArtist = document.getElementById('song-artist');
 
+// 简单的随机数生成器（基于seed）
+function seededRandom(seed) {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
+
+// 高频汉字库（与服务器端保持一致）
+const highFrequencyChars = [
+    '的', '一', '是', '了', '我', '不', '人', '在', '他', '有', '这', '个', '上', '们', '来', '到', '时', '大', '地', '为',
+    '子', '中', '你', '说', '生', '国', '年', '着', '就', '那', '和', '要', '她', '出', '也', '得', '里', '后', '自', '以',
+    '会', '家', '可', '下', '而', '过', '天', '去', '能', '对', '小', '多', '然', '于', '心', '学', '么', '之', '都', '好',
+    '看', '起', '发', '当', '没', '成', '只', '如', '事', '把', '还', '用', '第', '样', '道', '想', '作', '种', '开', '美',
+    '总', '从', '无', '情', '己', '面', '最', '女', '但', '现', '前', '些', '所', '同', '日', '手', '又', '行', '意', '动',
+    '方', '期', '它', '头', '经', '长', '儿', '回', '位', '分', '爱', '老', '因', '很', '给', '名', '法', '间', '知', '世',
+    '什', '月', '言', '通', '性', '本', '直', '高', '命', '取', '条', '件', '走', '场', '物', '合', '真', '品', '次', '式',
+    '活', '集', '加', '主', '赶', '进', '数', '路', '级', '少', '图', '山', '统', '接', '较', '将', '组', '见', '计', '别',
+    '角', '根', '论', '运', '农', '指', '几', '九', '区', '强', '放', '决', '西', '被', '干', '做', '必', '战', '先', '则',
+    '任', '据', '处', '队', '南', '色', '光', '门', '即', '保', '治', '北', '造', '百', '规', '热', '领', '七', '海', '口',
+    '东', '导', '器', '压', '志', '金', '增', '争', '济', '阶', '油', '思', '术', '极', '交', '受', '联', '认', '六', '共',
+    '权', '收', '证', '改', '清', '再', '采', '转', '更', '单', '风', '切', '打', '白', '教', '速', '花', '带', '安', '身',
+    '车', '例', '务', '具', '万', '每', '目', '至', '达', '积', '示', '议', '声', '报', '斗', '完', '类', '八', '离', '华',
+    '确', '才', '科', '张', '信', '马', '节', '话', '米', '整', '空', '元', '况', '今', '温', '传', '土', '许', '步', '群',
+    '广', '石', '记', '需', '段', '研', '界', '拉', '林', '律', '叫', '且', '究', '观', '越', '织', '装', '影', '算', '低',
+    '持', '音', '众', '书', '布', '复', '容', '须', '际', '商', '非', '验', '连', '断', '深', '难', '近', '矿', '千', '周',
+    '委', '素', '技', '备', '半', '办', '青', '省', '列', '习', '响', '约', '支', '般', '史', '感', '劳', '便', '团', '往',
+    '酸', '历', '市', '克', '何', '除', '消', '构', '府', '称', '太', '准', '精', '值', '号', '率', '族', '维', '划', '选',
+    '标', '写', '存', '候', '毛', '亲', '快', '效', '院', '查', '江', '型', '眼', '王', '按', '格', '养', '易', '置', '派',
+    '层', '片', '始', '却', '专', '状', '育', '厂', '京', '识', '适', '属', '圆', '包', '火', '住', '调', '满', '县', '局',
+    '照', '参', '红', '细', '引', '听', '该', '铁', '价', '严', '首', '底', '液', '官', '德', '随', '病', '苏', '失', '尔',
+    '死', '讲', '配', '黄', '推', '显', '谈', '罪', '神', '艺', '呢', '席', '含', '企', '望', '密', '批', '营', '项', '防',
+    '举', '球', '英', '氧', '势', '告', '李', '台', '落', '木', '帮', '轮', '破', '亚', '师', '围', '注', '远', '字', '材',
+    '排', '供', '河', '态', '封', '另', '施', '减', '树', '溶', '怎', '止', '案', '士', '均', '武', '固', '叶', '鱼', '波',
+    '视', '仅', '费', '紧', '左', '章', '早', '朝', '害', '续', '轻', '服', '试', '食', '充', '向', '际', '权', '治', '万'
+];
+
+// 生成提示字符（与服务器端逻辑一致）
+function generateHintChars(lyric, seed) {
+    const lyricChars = [...new Set([...lyric])]; // 去重的歌词字符
+    const hintChars = [];
+    const usedChars = new Set();
+    
+    // 添加歌词中的所有去重字符（确保用户能找到所有需要的字）
+    lyricChars.forEach(char => {
+        // 只添加中文字符、英文字母和数字，过滤掉标点符号
+        if (/[\u4e00-\u9fa5a-zA-Z0-9]/.test(char)) {
+            hintChars.push(char);
+            usedChars.add(char);
+        }
+    });
+    
+    // 从高频汉字库中随机选择剩余的字符，确保不重复
+    const availableChars = highFrequencyChars.filter(char => !usedChars.has(char));
+    
+    const remainingCount = Math.max(30 - hintChars.length, 0);
+    
+    // 使用seed进行确定性随机排序
+    const shuffledAvailableChars = [...availableChars].sort((a, b) => {
+        return seededRandom(seed + a.charCodeAt(0)) - seededRandom(seed + b.charCodeAt(0));
+    });
+    
+    for (let i = 0; i < remainingCount && i < shuffledAvailableChars.length; i++) {
+        hintChars.push(shuffledAvailableChars[i]);
+        usedChars.add(shuffledAvailableChars[i]);
+    }
+    
+    // 如果高频字库不够，从所有中文字符中补充
+    let randomSeed = seed;
+    while (hintChars.length < 30) {
+        randomSeed++;
+        const randomChar = String.fromCharCode(0x4e00 + Math.floor(seededRandom(randomSeed) * (0x9fff - 0x4e00)));
+        if (!usedChars.has(randomChar)) {
+            hintChars.push(randomChar);
+            usedChars.add(randomChar);
+        }
+    }
+    
+    // 去重并随机打乱顺序
+    const uniqueHintChars = [...new Set(hintChars)];
+    return uniqueHintChars.sort((a, b) => {
+        return seededRandom(seed + a.charCodeAt(0) + b.charCodeAt(0)) - 0.5;
+    });
+}
+
 // 游戏初始化
 async function initGame() {
     try {
@@ -49,18 +132,31 @@ async function initGame() {
         // 保存seed到游戏状态
         gameState.seed = seed;
         
-        // 从后端获取游戏状态，传递seed参数
-        const response = await fetch(`/api/game-state?seed=${seed}`);
-        const data = await response.json();
+        // 直接从 lyrics.json 文件读取数据（适用于GitHub Pages）
+        const response = await fetch('lyrics.json');
+        const lyrics = await response.json();
         
-        if (data.success) {
-            gameState.targetLyric = data.lyric;
-            gameState.songTitle = data.title || '经典歌词';
-            gameState.songArtist = data.artist || '传世金曲';
-            gameState.songSource = data.source || null;
-            gameState.audioFile = data.audioFile || '';
-            gameState.imageFile = data.imageFile || '';
-            gameState.hintChars = data.hintChars;
+        if (lyrics && lyrics.length > 0) {
+            // 使用seed选择一首歌
+            const numericSeed = parseInt(seed) || Date.now();
+            const randomValue = seededRandom(numericSeed);
+            const selectedIndex = Math.floor(randomValue * lyrics.length);
+            const selectedSong = lyrics[selectedIndex];
+            
+            gameState.targetLyric = selectedSong.lyric;
+            gameState.songTitle = selectedSong.title || '经典歌词';
+            gameState.songArtist = selectedSong.artist || '传世金曲';
+            gameState.songSource = selectedSong.source || null;
+            gameState.audioFile = selectedSong.audioFile || '';
+            gameState.imageFile = selectedSong.imageFile || '';
+            
+            // 生成提示字符（30个，包含歌词中所有字符）
+            const hintCharsArray = generateHintChars(selectedSong.lyric, numericSeed);
+            gameState.hintChars = hintCharsArray.map(char => ({
+                char: char,
+                index: -1 // 前端版本不需要追踪索引
+            }));
+            
             gameState.charStates.clear(); // 清除字符状态
             setupGameGrid();
             setupHintChars();
@@ -73,14 +169,15 @@ async function initGame() {
         }
     } catch (error) {
         console.error('初始化游戏失败:', error);
-        showError('网络连接失败，请检查网络后重试');
+        showError('无法加载游戏数据，请检查 lyrics.json 文件是否存在');
     }
 }
 
 // 设置游戏网格
 function setupGameGrid() {
     gameGrid.innerHTML = '';
-    const lyricLength = gameState.targetLyric.length;
+    // 使用正确的字符计数（处理Unicode）
+    const lyricLength = [...gameState.targetLyric].length;
     
     // 创建6行网格（6次机会）
     for (let row = 0; row < gameState.maxAttempts; row++) {
@@ -106,18 +203,18 @@ function setupHintChars() {
     if (!hintContainer) return;
     
     hintContainer.innerHTML = '';
-    gameState.hintChars.forEach((char, index) => {
+    gameState.hintChars.forEach((hintObj, index) => {
         const charElement = document.createElement('span');
         charElement.className = 'hint-char';
-        charElement.textContent = char;
-        charElement.id = `hint-${char}-${index}`; // 添加索引避免ID冲突
-        charElement.setAttribute('data-char', char); // 存储字符用于查找
+        charElement.textContent = hintObj.char; // 修复：访问对象的 char 属性
+        charElement.id = `hint-${hintObj.char}-${index}`; // 添加索引避免ID冲突
+        charElement.setAttribute('data-char', hintObj.char); // 存储字符用于查找
         charElement.addEventListener('click', () => {
-            insertCharToInput(char);
+            insertCharToInput(hintObj.char); // 修复：传递字符而不是对象
         });
         
         // 应用已知的字符状态
-        const charState = gameState.charStates.get(char);
+        const charState = gameState.charStates.get(hintObj.char);
         if (charState) {
             charElement.classList.add(`hint-${charState}`);
         }
@@ -131,9 +228,10 @@ function insertCharToInput(char) {
     if (gameState.gameOver) return;
     
     const currentValue = guessInput.value;
-    const maxLength = gameState.targetLyric.length;
+    const maxLength = [...gameState.targetLyric].length;
+    const currentLength = [...currentValue].length;
     
-    if (currentValue.length < maxLength) {
+    if (currentLength < maxLength) {
         guessInput.value = currentValue + char;
         guessInput.focus();
         updateCharCounter();
@@ -144,8 +242,9 @@ function insertCharToInput(char) {
 function updateCharCounter() {
     if (!gameState.targetLyric || !charCounter) return;
     
-    const currentLength = guessInput.value.length;
-    const targetLength = gameState.targetLyric.length;
+    // 使用 Array.from 或扩展运算符来正确计算字符数（处理Unicode）
+    const currentLength = [...guessInput.value].length;
+    const targetLength = [...gameState.targetLyric].length;
     const remaining = Math.max(0, targetLength - currentLength);
     
     if (remaining === 0) {
@@ -194,9 +293,10 @@ function setupInputEvents() {
         const value = e.target.value;
         const cleanedValue = value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '');
         
-        // 限制输入长度
-        const maxLength = gameState.targetLyric.length;
-        const finalValue = cleanedValue.slice(0, maxLength);
+        // 限制输入长度（使用正确的字符计数）
+        const maxLength = [...gameState.targetLyric].length;
+        const valueChars = [...cleanedValue];
+        const finalValue = valueChars.slice(0, maxLength).join('');
         
         if (value !== finalValue) {
             e.target.value = finalValue;
@@ -235,54 +335,76 @@ async function submitGuess() {
         // 禁用提交按钮
         submitBtn.disabled = true;
         
-        // 使用保存在游戏状态中的seed，确保与初始化时使用的seed一致
-        const seed = gameState.seed;
+        // 前端计算颜色（不再调用后端API）
+        const colors = calculateColors(guess, gameState.targetLyric);
+        const correct = guess === gameState.targetLyric;
         
-        console.log(`提交猜测，使用seed: ${seed}`);
+        // 更新网格显示
+        updateGrid(guess, colors);
         
-        // 发送猜测到后端
-        const response = await fetch('/api/guess', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ guess, seed })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // 更新网格显示
-            updateGrid(guess, data.colors);
-            
-            // 检查游戏状态
-            if (data.correct) {
-                // 答对后直接显示全绿色，不弹出窗口
-                gameState.gameOver = true;
-                gameState.won = true;
-                // 可以添加一些成功的视觉效果
-                showSuccessEffect();
-            } else {
-                gameState.currentRow++;
-                
-                if (gameState.currentRow >= gameState.maxAttempts) {
-                    endGame(false, `游戏结束！\n正确答案是："${gameState.targetLyric}"`);
-                }
-            }
-            
-            // 清空输入框并更新计数器
-            guessInput.value = '';
-            updateCharCounter();
+        // 检查游戏状态
+        if (correct) {
+            // 答对后直接显示全绿色，不弹出窗口
+            gameState.gameOver = true;
+            gameState.won = true;
+            // 可以添加一些成功的视觉效果
+            showSuccessEffect();
         } else {
-            showError(data.message || '提交失败，请重试');
+            gameState.currentRow++;
+            
+            if (gameState.currentRow >= gameState.maxAttempts) {
+                endGame(false, `游戏结束！\n正确答案是："${gameState.targetLyric}"`);
+            }
         }
+        
+        // 清空输入框并更新计数器
+        guessInput.value = '';
+        updateCharCounter();
     } catch (error) {
         console.error('提交猜测失败:', error);
-        showError('网络错误，请重试');
+        showError('处理猜测时出错，请重试');
     } finally {
         // 重新启用提交按钮
         submitBtn.disabled = false;
     }
+}
+
+// 前端计算颜色逻辑
+function calculateColors(guess, target) {
+    const colors = [];
+    // 使用扩展运算符正确处理Unicode字符
+    const targetChars = [...target];
+    const guessChars = [...guess];
+    const used = new Array(targetChars.length).fill(false);
+    
+    // 第一遍：标记完全正确的字符
+    for (let i = 0; i < guessChars.length; i++) {
+        if (guessChars[i] === targetChars[i]) {
+            colors[i] = 'correct';
+            used[i] = true;
+        }
+    }
+    
+    // 第二遍：标记存在但位置错误的字符
+    for (let i = 0; i < guessChars.length; i++) {
+        if (colors[i] === 'correct') continue;
+        
+        let found = false;
+        for (let j = 0; j < targetChars.length; j++) {
+            if (!used[j] && guessChars[i] === targetChars[j]) {
+                colors[i] = 'present';
+                used[j] = true;
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            colors[i] = 'absent';
+        }
+    }
+    
+    return colors;
 }
 
 // 验证输入
@@ -292,8 +414,12 @@ function validateInput(guess) {
         return false;
     }
     
-    if (guess.length !== gameState.targetLyric.length) {
-        showError(`请输入${gameState.targetLyric.length}个字符`);
+    // 使用正确的字符计数方法（处理Unicode字符）
+    const guessLength = [...guess].length;
+    const targetLength = [...gameState.targetLyric].length;
+    
+    if (guessLength !== targetLength) {
+        showError(`请输入${targetLength}个字符`);
         return false;
     }
     
@@ -308,10 +434,11 @@ function validateInput(guess) {
 // 更新网格显示
 function updateGrid(guess, colors) {
     const row = gameState.currentRow;
+    const guessChars = [...guess]; // 将字符串转换为字符数组（正确处理Unicode）
     
-    for (let i = 0; i < guess.length; i++) {
+    for (let i = 0; i < guessChars.length; i++) {
         const box = document.getElementById(`box-${row}-${i}`);
-        const char = guess[i];
+        const char = guessChars[i];
         box.textContent = char;
         
         // 更新字符状态（优先级：correct > present > absent）

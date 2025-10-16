@@ -34,10 +34,23 @@ git push -u origin main
 ### 步骤 3: 启用 GitHub Pages
 
 1. 进入你的 GitHub 仓库
-2. 点击 **Settings** (设置)
-3. 左侧菜单找到 **Pages**
-4. Source 选择: **GitHub Actions**
-5. 等待 1-2 分钟部署完成
+2. 点击 **Settings** (设置) 标签
+3. 左侧菜单找到 **Pages**（向下滚动找到）
+4. **找到下拉菜单**（可能标题是 "Source" 或在其他位置）
+5. **选择 "GitHub Actions"**
+   - ✅ 选择 **GitHub Actions**
+   - ❌ 不要选择 "Deploy from a branch"
+   - ❌ 不要选择 "None"
+6. 自动保存，等待 1-2 分钟部署完成
+
+**💡 找不到下拉菜单？**
+- 页面布局可能不同，查看 `PAGES-界面说明.md` 了解各种界面类型
+- 或查看 `最简配置指南.md` 获取详细步骤
+
+**💡 常见提示：**
+- "There are no verified domains" - 正常提示，忽略即可
+- "Build and deployment" - 这就是你要找的部分
+- 确保仓库是 **Public**（公开的）
 
 ### ✅ 完成！访问你的网站
 

@@ -42,11 +42,26 @@ git push -u origin main
 ### 4. 配置 GitHub Pages
 
 1. 进入你的 GitHub 仓库页面
-2. 点击 "Settings" (设置)
-3. 在左侧菜单找到 "Pages"
-4. 在 "Source" 部分选择：
-   - Source: **GitHub Actions**
-5. 保存设置
+2. 点击顶部的 **"Settings"** (设置) 标签
+3. 在左侧菜单向下滚动，找到 **"Pages"** 并点击
+4. 在 "Build and deployment" (构建和部署) 部分：
+   - **Source** 下拉菜单选择：**GitHub Actions**
+   - ⚠️ **重要**：不要选择 "Deploy from a branch"
+   - 选择后会显示 "Use a workflow file from your repository"
+5. 页面会自动保存，无需额外操作
+
+**关于 "There are no verified domains" 提示：**
+- 这是正常的提示，可以忽略
+- 这个功能用于企业级域名验证
+- 不影响 GitHub Pages 的基本使用
+- 只有当你想添加自定义域名时才需要关注
+
+**正确的配置应该显示：**
+```
+Build and deployment
+Source: GitHub Actions
+Use a workflow file from your repository to build and deploy
+```
 
 ### 5. 触发部署
 
