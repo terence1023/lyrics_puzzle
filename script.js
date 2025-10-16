@@ -15,73 +15,195 @@ let gameState = {
     seed: null                 // 游戏种子，确保整个会话使用同一个seed
 };
 
-// 每日统计管理
-const DailyStats = {
+// 全局统计管理系统
+const GlobalStats = {
     // 获取今日日期字符串 (YYYY-MM-DD)
     getTodayKey() {
         const today = new Date();
         return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     },
     
-    // 获取统计数据
-    getStats() {
+    // 获取当前题目的唯一标识（基于歌词内容）
+    getCurrentPuzzleId() {
+        if (!gameState.targetLyric) return null;
+        // 使用歌词 + 歌名生成唯一标识
+        return `${gameState.songTitle}_${gameState.targetLyric}`.replace(/\s/g, '');
+    },
+    
+    // 获取所有统计数据
+    getAllStats() {
         try {
-            const stats = localStorage.getItem('dailyStats');
-            console.log('📊 读取统计数据:', stats);
-            return stats ? JSON.parse(stats) : {};
+            const stats = localStorage.getItem('globalStats');
+            console.log('📊 读取全局统计数据:', stats);
+            return stats ? JSON.parse(stats) : {
+                totalGames: 0,           // 总游戏次数
+                totalWins: 0,            // 总通关次数
+                dailyStats: {},          // 每日统计 {date: {wins: 0, attempts: 0}}
+                puzzleStats: {},         // 每题统计 {puzzleId: {wins: 0, attempts: 0, firstWinDate: ''}}
+                userHistory: []          // 用户历史记录 [{date, puzzleId, won, attempts, time}]
+            };
         } catch (e) {
             console.error('❌ 读取统计数据失败:', e);
-            return {};
+            return {totalGames: 0, totalWins: 0, dailyStats: {}, puzzleStats: {}, userHistory: []};
         }
     },
     
     // 保存统计数据
     saveStats(stats) {
         try {
-            localStorage.setItem('dailyStats', JSON.stringify(stats));
-            console.log('💾 保存统计数据:', stats);
+            localStorage.setItem('globalStats', JSON.stringify(stats));
+            console.log('💾 保存全局统计数据成功');
         } catch (e) {
             console.error('❌ 保存统计数据失败:', e);
         }
     },
     
-    // 获取今日通过人数
+    // 获取今日通过人数（基于本地浏览器）
     getTodayWins() {
-        const stats = this.getStats();
+        const stats = this.getAllStats();
         const today = this.getTodayKey();
-        const wins = stats[today] || 0;
-        console.log(`📈 今日(${today})通过人数:`, wins);
-        return wins;
+        return stats.dailyStats[today]?.wins || 0;
     },
     
-    // 记录一次通过
-    recordWin() {
-        const stats = this.getStats();
+    // 获取今日总挑战次数
+    getTodayAttempts() {
+        const stats = this.getAllStats();
         const today = this.getTodayKey();
+        return stats.dailyStats[today]?.attempts || 0;
+    },
+    
+    // 获取当前题目的统计
+    getCurrentPuzzleStats() {
+        const puzzleId = this.getCurrentPuzzleId();
+        if (!puzzleId) return null;
         
-        // 检查今天是否已经记录过
-        const winRecordKey = `win_${today}`;
-        const hasRecorded = localStorage.getItem(winRecordKey);
+        const stats = this.getAllStats();
+        return stats.puzzleStats[puzzleId] || {wins: 0, attempts: 0, firstWinDate: null};
+    },
+    
+    // 记录游戏开始
+    recordGameStart() {
+        const stats = this.getAllStats();
+        const today = this.getTodayKey();
+        const puzzleId = this.getCurrentPuzzleId();
         
-        console.log(`🎮 尝试记录通关 - 日期: ${today}, 已记录: ${hasRecorded}`);
-        
-        if (!hasRecorded) {
-            stats[today] = (stats[today] || 0) + 1;
-            this.saveStats(stats);
-            localStorage.setItem(winRecordKey, 'true');
-            console.log(`✅ 记录成功！今日通过人数: ${stats[today]}`);
-            this.updateDisplay();
-            this.showWinAnimation();
-        } else {
-            console.log('ℹ️ 今日已记录过，跳过');
+        if (!puzzleId) {
+            console.warn('⚠️ 无法获取题目ID，跳过记录');
+            return;
         }
+        
+        // 初始化今日统计
+        if (!stats.dailyStats[today]) {
+            stats.dailyStats[today] = {wins: 0, attempts: 0};
+        }
+        
+        // 初始化题目统计
+        if (!stats.puzzleStats[puzzleId]) {
+            stats.puzzleStats[puzzleId] = {wins: 0, attempts: 0, firstWinDate: null};
+        }
+        
+        // 增加尝试次数
+        stats.totalGames++;
+        stats.dailyStats[today].attempts++;
+        stats.puzzleStats[puzzleId].attempts++;
+        
+        this.saveStats(stats);
+        console.log(`🎮 记录游戏开始 - 题目: ${gameState.songTitle}, 总游戏数: ${stats.totalGames}`);
+    },
+    
+    // 记录通关成功
+    recordWin() {
+        const stats = this.getAllStats();
+        const today = this.getTodayKey();
+        const puzzleId = this.getCurrentPuzzleId();
+        
+        if (!puzzleId) {
+            console.warn('⚠️ 无法获取题目ID，跳过记录');
+            return;
+        }
+        
+        console.log(`🎮 记录通关 - 日期: ${today}, 题目: ${gameState.songTitle}`);
+        
+        // 确保数据结构存在
+        if (!stats.dailyStats[today]) {
+            stats.dailyStats[today] = {wins: 0, attempts: 0};
+        }
+        if (!stats.puzzleStats[puzzleId]) {
+            stats.puzzleStats[puzzleId] = {wins: 0, attempts: 0, firstWinDate: null};
+        }
+        
+        // 增加通关次数
+        stats.totalWins++;
+        stats.dailyStats[today].wins++;
+        stats.puzzleStats[puzzleId].wins++;
+        
+        // 记录首次通关日期
+        if (!stats.puzzleStats[puzzleId].firstWinDate) {
+            stats.puzzleStats[puzzleId].firstWinDate = today;
+        }
+        
+        // 添加到历史记录
+        stats.userHistory.push({
+            date: today,
+            timestamp: new Date().toISOString(),
+            puzzleId: puzzleId,
+            songTitle: gameState.songTitle,
+            songArtist: gameState.songArtist,
+            lyric: gameState.targetLyric,
+            won: true,
+            attempts: gameState.currentRow + 1,
+            time: new Date().toLocaleTimeString()
+        });
+        
+        // 限制历史记录数量（保留最近100条）
+        if (stats.userHistory.length > 100) {
+            stats.userHistory = stats.userHistory.slice(-100);
+        }
+        
+        this.saveStats(stats);
+        console.log(`✅ 通关记录成功！`);
+        console.log(`   - 总通关数: ${stats.totalWins}`);
+        console.log(`   - 今日通关: ${stats.dailyStats[today].wins}`);
+        console.log(`   - 本题通关: ${stats.puzzleStats[puzzleId].wins}`);
+        
+        this.updateDisplay();
+        this.showWinAnimation();
+    },
+    
+    // 记录游戏失败
+    recordLoss() {
+        const stats = this.getAllStats();
+        const today = this.getTodayKey();
+        const puzzleId = this.getCurrentPuzzleId();
+        
+        if (!puzzleId) return;
+        
+        // 添加到历史记录
+        stats.userHistory.push({
+            date: today,
+            timestamp: new Date().toISOString(),
+            puzzleId: puzzleId,
+            songTitle: gameState.songTitle,
+            songArtist: gameState.songArtist,
+            lyric: gameState.targetLyric,
+            won: false,
+            attempts: gameState.maxAttempts,
+            time: new Date().toLocaleTimeString()
+        });
+        
+        if (stats.userHistory.length > 100) {
+            stats.userHistory = stats.userHistory.slice(-100);
+        }
+        
+        this.saveStats(stats);
+        console.log('📝 失败记录已保存');
     },
     
     // 更新显示
     updateDisplay() {
         const wins = this.getTodayWins();
         const displayElement = document.getElementById('daily-wins');
-        console.log('🔄 更新显示 - 元素:', displayElement, '数值:', wins);
+        console.log('🔄 更新显示 - 今日通关数:', wins);
         if (displayElement) {
             displayElement.textContent = wins;
             console.log('✅ 显示已更新');
@@ -105,12 +227,35 @@ const DailyStats = {
         }
     },
     
+    // 获取统计摘要
+    getStatsSummary() {
+        const stats = this.getAllStats();
+        const today = this.getTodayKey();
+        
+        return {
+            total: {
+                games: stats.totalGames,
+                wins: stats.totalWins,
+                winRate: stats.totalGames > 0 ? ((stats.totalWins / stats.totalGames) * 100).toFixed(1) : 0
+            },
+            today: {
+                wins: stats.dailyStats[today]?.wins || 0,
+                attempts: stats.dailyStats[today]?.attempts || 0,
+                winRate: stats.dailyStats[today]?.attempts > 0 
+                    ? ((stats.dailyStats[today].wins / stats.dailyStats[today].attempts) * 100).toFixed(1) 
+                    : 0
+            },
+            currentPuzzle: this.getCurrentPuzzleStats(),
+            recentHistory: stats.userHistory.slice(-10).reverse()
+        };
+    },
+    
     // 初始化
     init() {
-        console.log('🚀 初始化每日统计...');
+        console.log('🚀 初始化全局统计系统...');
         this.updateDisplay();
         
-        // 添加CSS动画（如果还没有）
+        // 添加CSS动画
         if (!document.getElementById('daily-stats-animations')) {
             const style = document.createElement('style');
             style.id = 'daily-stats-animations';
@@ -129,9 +274,17 @@ const DailyStats = {
             `;
             document.head.appendChild(style);
         }
-        console.log('✅ 每日统计初始化完成');
+        
+        console.log('✅ 全局统计系统初始化完成');
+        
+        // 输出统计摘要
+        const summary = this.getStatsSummary();
+        console.log('📊 统计摘要:', summary);
     }
 };
+
+// 保持向后兼容（DailyStats 别名）
+const DailyStats = GlobalStats;
 
 // DOM元素引用
 const gameGrid = document.getElementById('game-grid');
@@ -282,6 +435,11 @@ async function initGame() {
             updateCharCounter();
             
             console.log(`游戏初始化成功，使用seed: ${seed}`);
+            
+            // 记录游戏开始（在游戏完全初始化后）
+            setTimeout(() => {
+                GlobalStats.recordGameStart();
+            }, 100);
         } else {
             showError('获取游戏数据失败，请刷新页面重试');
         }
@@ -607,6 +765,11 @@ function endGame(won, message) {
     gameState.gameOver = true;
     gameState.won = won;
     
+    // 记录失败
+    if (!won) {
+        GlobalStats.recordLoss();
+    }
+    
     modalTitle.textContent = won ? '🎉 恭喜！' : '😅 游戏结束';
     modalMessage.textContent = message;
     gameModal.classList.remove('hidden');
@@ -636,8 +799,8 @@ guessInput.addEventListener('blur', function() {
 
 // 页面加载完成后初始化游戏
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化每日统计
-    DailyStats.init();
+    // 初始化全局统计系统
+    GlobalStats.init();
     
     // 初始化游戏
     initGame();
