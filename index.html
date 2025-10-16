@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>歌词猜猜乐 - Lyric Wordle</title>
+    <title>Lyrics Puzzle</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎵 Lyrics Puzzle 🎵</h1>
+            <h1><span class="music-note">♪</span> Lyrics Puzzle <span class="music-note">♪</span></h1>
             <p class="subtitle">猜出今日的歌词！你有6次机会</p>
             
             <!-- 简洁游戏规则 -->
@@ -62,12 +62,12 @@
             </div>
 
             <!-- 游戏状态显示 -->
-            <div id="game-status" class="game-status">
+            <div id="game-status" class="game-status" style="display: none;">
                 <!-- 游戏状态信息将通过JavaScript动态显示 -->
             </div>
 
-            <!-- 测试按钮 (临时) -->
-            <div style="text-align: center; margin: 20px 0;">
+            <!-- 测试按钮 (临时) - 已隐藏用于正式发布 -->
+            <div style="display: none; text-align: center; margin: 20px 0;">
                 <button onclick="testLyricsCard()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
                     🧪 测试歌词卡显示
                 </button>

@@ -243,8 +243,19 @@ function generateHintChars(lyric) {
 // API路由：获取游戏状态
 app.get('/api/game-state', (req, res) => {
     try {
-        // 从查询参数获取seed
-        const seed = req.query.seed ? parseInt(req.query.seed) : null;
+        // 从查询参数获取seed，确保转换为数字
+        let seed = null;
+        if (req.query.seed) {
+            seed = parseInt(req.query.seed, 10);
+            if (isNaN(seed)) {
+                return res.status(400).json({
+                    success: false,
+                    message: '无效的seed参数'
+                });
+            }
+        }
+        
+        console.log(`API /game-state - 收到seed: ${seed}`);
         
         const todayLyricInfo = getTodayLyricInfo(seed);
         const todayLyricText = todayLyricInfo.lyric;
@@ -257,6 +268,8 @@ app.get('/api/game-state', (req, res) => {
         }
         
         const hintChars = generateHintChars(todayLyricText);
+        
+        console.log(`API /game-state - 返回歌词: ${todayLyricText.substring(0, 10)}...`);
         
         res.json({
             success: true,
@@ -291,8 +304,20 @@ app.post('/api/guess', (req, res) => {
             });
         }
         
-        // 使用seed获取对应的歌词
-        const seedValue = seed ? parseInt(seed) : null;
+        // 使用seed获取对应的歌词，确保转换为数字
+        let seedValue = null;
+        if (seed) {
+            seedValue = parseInt(seed, 10);
+            if (isNaN(seedValue)) {
+                return res.status(400).json({
+                    success: false,
+                    message: '无效的seed参数'
+                });
+            }
+        }
+        
+        console.log(`API /guess - 收到猜测: ${guess}, seed: ${seedValue}`);
+        
         const target = getTodayLyricText(seedValue);
         
         if (!target) {
@@ -313,6 +338,8 @@ app.post('/api/guess', (req, res) => {
         // 比较猜测和答案
         const colors = compareGuess(guess, target);
         const isCorrect = guess === target;
+        
+        console.log(`API /guess - 目标歌词: ${target.substring(0, 10)}..., 是否正确: ${isCorrect}`);
         
         res.json({
             success: true,

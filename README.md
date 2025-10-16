@@ -12,7 +12,25 @@
 
 ## 🚀 快速开始
 
-### 方法一：一键部署（推荐）
+### 方法一：部署到 GitHub Pages（推荐 ⭐）
+
+**永久在线，免费访问，无需服务器！**
+
+#### 一键部署向导
+```bash
+./setup-github-pages.sh
+```
+
+或查看详细步骤：
+- [📖 完整部署指南](DEPLOY-GITHUB-PAGES.md)
+- [⚡ 快速部署指南](QUICK-DEPLOY.md)
+
+部署后，你的游戏将可通过以下地址访问：
+```
+https://YOUR_USERNAME.github.io/lyrics_wordle/
+```
+
+### 方法二：本地/临时部署
 
 #### 1. 无警告页面部署
 ```bash
@@ -28,23 +46,29 @@
 
 #### 2. 部署选项说明
 
-**选项1: ngrok（已优化）**
+**GitHub Pages（永久部署）**
+- 运行 `./setup-github-pages.sh` - 交互式部署向导
+- 免费、稳定、永久在线
+- 适合分享给朋友和公开访问
+- 详见 [DEPLOY-GITHUB-PAGES.md](DEPLOY-GITHUB-PAGES.md)
+
+**ngrok（临时测试）**
 - 运行 `./deploy.sh` - 已添加 `--inspect=false` 参数禁用警告页面
 - 提供本地、局域网和公网访问地址
 - 需要ngrok账户和认证令牌
 
-**选项2: LocalTunnel（推荐）**
+**LocalTunnel（临时测试）**
 - 运行 `./deploy-localtunnel.sh` 
 - 完全无警告页面，可直接访问
 - 无需注册账户
 - URL格式：`https://xxx.loca.lt`
 
-**选项3: 交互式部署**
+**交互式部署**
 - 运行 `./deploy-quick.sh`
 - 提供多种部署方式选择
 - 包含其他免费内网穿透工具推荐
 
-### 方法二：手动部署
+### 方法三：本地开发
 
 #### 安装依赖
 ```bash

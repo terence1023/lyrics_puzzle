@@ -80,6 +80,12 @@ case $choice in
         echo "🌐 要获得公网访问，请在新终端窗口运行："
         echo "ssh -R 80:localhost:$PORT serveo.net"
         echo ""
+        echo "💡 重要提示："
+        echo "   - Serveo会分配一个随机URL（如 https://xxxxx.serveo.net）"
+        echo "   - 每次访问时URL中会自动添加seed参数"
+        echo "   - 相同seed确保多次访问看到相同题目"
+        echo "   - 分享URL时包含seed参数，朋友将看到相同题目"
+        echo ""
         echo "✅ Serveo完全无警告页面"
         echo "================================"
         

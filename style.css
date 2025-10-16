@@ -63,6 +63,10 @@ header h1 {
     font-weight: 600;
 }
 
+header h1 .music-note {
+    color: #6aaa64; /* 绿色音符 */
+}
+
 .subtitle {
     color: rgba(255,255,255,0.9);
     font-size: 1.1em;

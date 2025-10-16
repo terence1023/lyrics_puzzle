@@ -11,7 +11,8 @@ let gameState = {
     gameOver: false,           // 游戏是否结束
     won: false,                // 是否获胜
     hintChars: [],             // 提示汉字
-    charStates: new Map()      // 汉字状态追踪 (char -> 'correct' | 'present' | 'absent')
+    charStates: new Map(),     // 汉字状态追踪 (char -> 'correct' | 'present' | 'absent')
+    seed: null                 // 游戏种子，确保整个会话使用同一个seed
 };
 
 // DOM元素引用
@@ -32,9 +33,21 @@ const songArtist = document.getElementById('song-artist');
 // 游戏初始化
 async function initGame() {
     try {
-        // 从URL获取seed参数
+        // 从URL获取seed参数，如果没有则生成一个新的seed
         const urlParams = new URLSearchParams(window.location.search);
-        const seed = urlParams.get('seed') || Date.now();
+        let seed = urlParams.get('seed');
+        
+        // 如果URL中没有seed，生成一个新的并添加到URL中
+        if (!seed) {
+            seed = Date.now().toString();
+            // 更新URL但不刷新页面
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('seed', seed);
+            window.history.replaceState({}, '', newUrl);
+        }
+        
+        // 保存seed到游戏状态
+        gameState.seed = seed;
         
         // 从后端获取游戏状态，传递seed参数
         const response = await fetch(`/api/game-state?seed=${seed}`);
@@ -53,6 +66,8 @@ async function initGame() {
             setupHintChars();
             setupInputEvents();
             updateCharCounter();
+            
+            console.log(`游戏初始化成功，使用seed: ${seed}`);
         } else {
             showError('获取游戏数据失败，请刷新页面重试');
         }
@@ -220,9 +235,10 @@ async function submitGuess() {
         // 禁用提交按钮
         submitBtn.disabled = true;
         
-        // 获取URL中的seed参数
-        const urlParams = new URLSearchParams(window.location.search);
-        const seed = urlParams.get('seed') || Date.now();
+        // 使用保存在游戏状态中的seed，确保与初始化时使用的seed一致
+        const seed = gameState.seed;
+        
+        console.log(`提交猜测，使用seed: ${seed}`);
         
         // 发送猜测到后端
         const response = await fetch('/api/guess', {
