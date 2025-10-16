@@ -235,7 +235,8 @@ function insertCharToInput(char) {
     
     if (currentLength < maxLength) {
         guessInput.value = currentValue + char;
-        guessInput.focus();
+        // 移除自动聚焦，避免移动端点击提示字时弹出键盘
+        // guessInput.focus();
         updateCharCounter();
     }
 }
