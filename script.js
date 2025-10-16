@@ -27,9 +27,10 @@ const DailyStats = {
     getStats() {
         try {
             const stats = localStorage.getItem('dailyStats');
+            console.log('📊 读取统计数据:', stats);
             return stats ? JSON.parse(stats) : {};
         } catch (e) {
-            console.error('读取统计数据失败:', e);
+            console.error('❌ 读取统计数据失败:', e);
             return {};
         }
     },
@@ -38,8 +39,9 @@ const DailyStats = {
     saveStats(stats) {
         try {
             localStorage.setItem('dailyStats', JSON.stringify(stats));
+            console.log('💾 保存统计数据:', stats);
         } catch (e) {
-            console.error('保存统计数据失败:', e);
+            console.error('❌ 保存统计数据失败:', e);
         }
     },
     
@@ -47,7 +49,9 @@ const DailyStats = {
     getTodayWins() {
         const stats = this.getStats();
         const today = this.getTodayKey();
-        return stats[today] || 0;
+        const wins = stats[today] || 0;
+        console.log(`📈 今日(${today})通过人数:`, wins);
+        return wins;
     },
     
     // 记录一次通过
@@ -59,12 +63,17 @@ const DailyStats = {
         const winRecordKey = `win_${today}`;
         const hasRecorded = localStorage.getItem(winRecordKey);
         
+        console.log(`🎮 尝试记录通关 - 日期: ${today}, 已记录: ${hasRecorded}`);
+        
         if (!hasRecorded) {
             stats[today] = (stats[today] || 0) + 1;
             this.saveStats(stats);
             localStorage.setItem(winRecordKey, 'true');
+            console.log(`✅ 记录成功！今日通过人数: ${stats[today]}`);
             this.updateDisplay();
             this.showWinAnimation();
+        } else {
+            console.log('ℹ️ 今日已记录过，跳过');
         }
     },
     
@@ -72,8 +81,12 @@ const DailyStats = {
     updateDisplay() {
         const wins = this.getTodayWins();
         const displayElement = document.getElementById('daily-wins');
+        console.log('🔄 更新显示 - 元素:', displayElement, '数值:', wins);
         if (displayElement) {
             displayElement.textContent = wins;
+            console.log('✅ 显示已更新');
+        } else {
+            console.error('❌ 找不到 daily-wins 元素！');
         }
     },
     
@@ -94,6 +107,7 @@ const DailyStats = {
     
     // 初始化
     init() {
+        console.log('🚀 初始化每日统计...');
         this.updateDisplay();
         
         // 添加CSS动画（如果还没有）
@@ -115,6 +129,7 @@ const DailyStats = {
             `;
             document.head.appendChild(style);
         }
+        console.log('✅ 每日统计初始化完成');
     }
 };
 
