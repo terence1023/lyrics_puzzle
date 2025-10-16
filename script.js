@@ -15,9 +15,6 @@ let gameState = {
     seed: null                 // 游戏种子，确保整个会话使用同一个seed
 };
 
-// 注意：GlobalStats 和 DailyStats 现在由 firebase-stats.js 提供
-// 请确保 firebase-stats.js 在 script.js 之前加载
-
 // DOM元素引用
 const gameGrid = document.getElementById('game-grid');
 const guessInput = document.getElementById('guess-input');
@@ -321,9 +318,6 @@ function showSuccessEffect() {
         }, index * 100);
     });
     
-    // 记录今日通过人数
-    DailyStats.recordWin();
-    
     // 显示歌词卡
     setTimeout(() => {
         showLyricsCard();
@@ -524,10 +518,7 @@ guessInput.addEventListener('blur', function() {
 });
 
 // 页面加载完成后初始化游戏
-document.addEventListener('DOMContentLoaded', async function() {
-    // 初始化全局统计系统（异步）
-    await GlobalStats.init();
-    
+document.addEventListener('DOMContentLoaded', function() {
     // 初始化游戏
     initGame();
     guessInput.focus();
