@@ -15,6 +15,109 @@ let gameState = {
     seed: null                 // 游戏种子，确保整个会话使用同一个seed
 };
 
+// 每日统计管理
+const DailyStats = {
+    // 获取今日日期字符串 (YYYY-MM-DD)
+    getTodayKey() {
+        const today = new Date();
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    },
+    
+    // 获取统计数据
+    getStats() {
+        try {
+            const stats = localStorage.getItem('dailyStats');
+            return stats ? JSON.parse(stats) : {};
+        } catch (e) {
+            console.error('读取统计数据失败:', e);
+            return {};
+        }
+    },
+    
+    // 保存统计数据
+    saveStats(stats) {
+        try {
+            localStorage.setItem('dailyStats', JSON.stringify(stats));
+        } catch (e) {
+            console.error('保存统计数据失败:', e);
+        }
+    },
+    
+    // 获取今日通过人数
+    getTodayWins() {
+        const stats = this.getStats();
+        const today = this.getTodayKey();
+        return stats[today] || 0;
+    },
+    
+    // 记录一次通过
+    recordWin() {
+        const stats = this.getStats();
+        const today = this.getTodayKey();
+        
+        // 检查今天是否已经记录过
+        const winRecordKey = `win_${today}`;
+        const hasRecorded = localStorage.getItem(winRecordKey);
+        
+        if (!hasRecorded) {
+            stats[today] = (stats[today] || 0) + 1;
+            this.saveStats(stats);
+            localStorage.setItem(winRecordKey, 'true');
+            this.updateDisplay();
+            this.showWinAnimation();
+        }
+    },
+    
+    // 更新显示
+    updateDisplay() {
+        const wins = this.getTodayWins();
+        const displayElement = document.getElementById('daily-wins');
+        if (displayElement) {
+            displayElement.textContent = wins;
+        }
+    },
+    
+    // 显示通过动画
+    showWinAnimation() {
+        const panel = document.querySelector('.daily-stats-panel');
+        const number = document.getElementById('daily-wins');
+        if (panel && number) {
+            panel.style.animation = 'none';
+            number.style.animation = 'none';
+            
+            setTimeout(() => {
+                panel.style.animation = 'celebration 0.6s ease-out';
+                number.style.animation = 'numberPop 0.5s ease-out';
+            }, 10);
+        }
+    },
+    
+    // 初始化
+    init() {
+        this.updateDisplay();
+        
+        // 添加CSS动画（如果还没有）
+        if (!document.getElementById('daily-stats-animations')) {
+            const style = document.createElement('style');
+            style.id = 'daily-stats-animations';
+            style.textContent = `
+                @keyframes celebration {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1) rotate(5deg); }
+                    100% { transform: scale(1) rotate(0deg); }
+                }
+                
+                @keyframes numberPop {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.3); }
+                    100% { transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+};
+
 // DOM元素引用
 const gameGrid = document.getElementById('game-grid');
 const guessInput = document.getElementById('guess-input');
@@ -316,6 +419,9 @@ function showSuccessEffect() {
         }, index * 100);
     });
     
+    // 记录今日通过人数
+    DailyStats.recordWin();
+    
     // 显示歌词卡
     setTimeout(() => {
         showLyricsCard();
@@ -515,6 +621,10 @@ guessInput.addEventListener('blur', function() {
 
 // 页面加载完成后初始化游戏
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化每日统计
+    DailyStats.init();
+    
+    // 初始化游戏
     initGame();
     guessInput.focus();
 });
