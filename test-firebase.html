@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase 统计测试</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        h1 { color: white; text-align: center; margin-bottom: 30px; }
+        h2 { color: #667eea; }
+        button {
+            background: #6aaa64;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #5a9a54; }
+        button.danger { background: #d32f2f; }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .stat-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #6aaa64;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase 全局统计测试</h1>
+    
+    <div class="panel">
+        <h2>连接状态</h2>
+        <div id="connection-status" class="status info">检查中...</div>
+    </div>
+    
+    <div class="panel">
+        <h2>今日全球通过人数</h2>
+        <div class="stat-display" id="today-wins">加载中...</div>
+        <p style="text-align: center; color: #666;">
+            日期: <strong id="today-date"></strong>
+        </p>
+    </div>
+    
+    <div class="panel">
+        <h2>测试操作</h2>
+        <button onclick="testGetWins()">📊 获取今日人数</button>
+        <button onclick="testRecordWin()">✅ 模拟通关（+1）</button>
+        <button onclick="testRefresh()">🔄 刷新数据</button>
+        <button onclick="clearLocalRecord()" class="danger">🗑️ 清除本地记录标记</button>
+    </div>
+    
+    <div class="panel">
+        <h2>控制台日志</h2>
+        <div id="console-log" class="log"></div>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+    
+    <div class="panel">
+        <h2>说明</h2>
+        <ul>
+            <li>✅ <strong>绿色</strong> = Firebase 连接成功</li>
+            <li>❌ <strong>红色</strong> = Firebase 连接失败（检查配置）</li>
+            <li>🎭 <strong>蓝色</strong> = 使用模拟数据（未配置 Firebase）</li>
+        </ul>
+        <p><strong>注意：</strong>每个设备每天只能记录一次通关。如需重复测试，请点击"清除本地记录标记"。</p>
+    </div>
+    
+    <script src="firebase-stats.js"></script>
+    <script>
+        // 日志函数
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#0f0',
+                error: '#f00',
+                warn: '#ff0',
+                success: '#0ff'
+            };
+            const entry = document.createElement('div');
+            entry.style.color = colors[type] || '#0f0';
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+        }
+        
+        function clearLog() {
+            document.getElementById('console-log').innerHTML = '';
+        }
+        
+        // 获取今日日期
+        function getTodayKey() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+        
+        // 更新显示
+        async function updateDisplay() {
+            try {
+                const wins = await GlobalStats.getTodayWins();
+                document.getElementById('today-wins').textContent = wins;
+                document.getElementById('today-date').textContent = getTodayKey();
+                log(`✅ 今日通过人数: ${wins}`, 'success');
+            } catch (error) {
+                log(`❌ 更新显示失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试获取人数
+        async function testGetWins() {
+            log('📊 正在获取今日通过人数...', 'info');
+            await updateDisplay();
+        }
+        
+        // 测试记录通关
+        async function testRecordWin() {
+            log('🎮 尝试记录通关...', 'info');
+            try {
+                await GlobalStats.recordWin();
+                await updateDisplay();
+                log('✅ 记录成功！', 'success');
+            } catch (error) {
+                log(`❌ 记录失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试刷新
+        async function testRefresh() {
+            log('🔄 刷新数据...', 'info');
+            await GlobalStats.updateDisplay();
+            await updateDisplay();
+        }
+        
+        // 清除本地记录
+        function clearLocalRecord() {
+            const today = getTodayKey();
+            const key = `recorded_${today}`;
+            localStorage.removeItem(key);
+            log(`🗑️ 已清除本地记录标记: ${key}`, 'warn');
+            log('💡 现在可以再次测试记录通关', 'info');
+        }
+        
+        // 检查连接状态
+        async function checkConnection() {
+            const statusDiv = document.getElementById('connection-status');
+            
+            try {
+                // 检查 Firebase 是否初始化
+                if (typeof firebaseStats === 'undefined') {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Firebase 统计系统未加载';
+                    log('❌ firebase-stats.js 未正确加载', 'error');
+                    return;
+                }
+                
+                // 初始化 Firebase
+                await firebaseStats.init();
+                
+                if (firebaseStats.initialized) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ Firebase 连接成功！使用云端统计';
+                    log('✅ Firebase 连接成功', 'success');
+                    log(`   API Key: ${firebaseStats.config.apiKey.substring(0, 20)}...`, 'info');
+                    log(`   Database URL: ${firebaseStats.config.databaseURL}`, 'info');
+                } else {
+                    statusDiv.className = 'status info';
+                    statusDiv.textContent = '🎭 使用模拟统计（Firebase 未配置）';
+                    log('⚠️ Firebase 未配置，使用模拟数据', 'warn');
+                }
+                
+                await updateDisplay();
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ 连接失败: ${error.message}`;
+                log(`❌ 初始化失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载时检查连接
+        window.onload = function() {
+            log('🚀 开始测试...', 'info');
+            checkConnection();
+        };
+        
+        // 捕获所有控制台输出
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            log(args.join(' '), 'info');
+        };
+        
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            log(args.join(' '), 'error');
+        };
+        
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            log(args.join(' '), 'warn');
+        };
+    </script>
+</body>
+</html>
