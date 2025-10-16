@@ -6,205 +6,96 @@
 
 - 玩家有6次机会猜出正确的歌词
 - 每次猜测后，系统会用颜色给出提示：
-  - 🟢 **<span style="background-color: #6aaa64; color: white; padding: 2px 6px; border-radius: 4px;">绿色</span>**：字符正确且位置正确
-  - 🟡 **<span style="background-color: #c9b458; color: white; padding: 2px 6px; border-radius: 4px;">黄色</span>**：字符正确但位置错误  
-  - ⚫ **<span style="background-color: #787c7e; color: white; padding: 2px 6px; border-radius: 4px;">灰色</span>**：字符不在答案中
+  - 🟢 **绿色**：字符正确且位置正确
+  - 🟡 **黄色**：字符正确但位置错误  
+  - ⚫ **灰色**：字符不在答案中
 
 ## 🚀 快速开始
 
-### 方法一：部署到 GitHub Pages（推荐 ⭐）
+### 方法一：本地运行
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/terence1023/lyrics_puzzle.git
+cd lyrics_puzzle
+
+# 2. 安装依赖
+npm install
+
+# 3. 启动服务器
+npm start
+
+# 4. 访问游戏
+# 浏览器打开 http://localhost:3000
+```
+
+### 方法二：部署到 GitHub Pages（推荐）
 
 **永久在线，免费访问，无需服务器！**
 
-#### 一键部署向导
 ```bash
-./setup-github-pages.sh
+# 运行部署脚本
+./deploy-github.sh
 ```
-
-或查看详细步骤：
-- [📖 完整部署指南](DEPLOY-GITHUB-PAGES.md)
-- [⚡ 快速部署指南](QUICK-DEPLOY.md)
 
 部署后，你的游戏将可通过以下地址访问：
 ```
 https://YOUR_USERNAME.github.io/lyrics_wordle/
 ```
 
-### 方法二：本地/临时部署
+**GitHub Pages 部署步骤：**
 
-#### 1. 无警告页面部署
-```bash
-# 使用修改后的部署脚本（已禁用ngrok警告页面）
-./deploy.sh
-
-# 或者使用LocalTunnel（完全无警告页面）
-./deploy-localtunnel.sh
-
-# 或者使用交互式部署脚本
-./deploy-quick.sh
-```
-
-#### 2. 部署选项说明
-
-**GitHub Pages（永久部署）**
-- 运行 `./setup-github-pages.sh` - 交互式部署向导
-- 免费、稳定、永久在线
-- 适合分享给朋友和公开访问
-- 详见 [DEPLOY-GITHUB-PAGES.md](DEPLOY-GITHUB-PAGES.md)
-
-**ngrok（临时测试）**
-- 运行 `./deploy.sh` - 已添加 `--inspect=false` 参数禁用警告页面
-- 提供本地、局域网和公网访问地址
-- 需要ngrok账户和认证令牌
-
-**LocalTunnel（临时测试）**
-- 运行 `./deploy-localtunnel.sh` 
-- 完全无警告页面，可直接访问
-- 无需注册账户
-- URL格式：`https://xxx.loca.lt`
-
-**交互式部署**
-- 运行 `./deploy-quick.sh`
-- 提供多种部署方式选择
-- 包含其他免费内网穿透工具推荐
-
-### 方法三：本地开发
-
-#### 安装依赖
-```bash
-npm install
-```
-
-#### 启动开发服务器
-```bash
-npm run dev
-```
-
-#### 启动生产服务器
-```bash
-npm start
-```
-
-#### 访问游戏
-打开浏览器访问 `http://localhost:3000`
-
-### 🌐 避免ngrok警告页面的方法
-
-如果使用ngrok遇到"You are about to visit"警告页面，可以：
-
-1. **使用优化后的部署脚本**（推荐）：
-   ```bash
-   ./deploy.sh  # 已添加 --inspect=false 参数
-   ```
-
-2. **使用LocalTunnel替代**（最简单）：
-   ```bash
-   npm install -g localtunnel  # 全局安装
-   ./deploy-localtunnel.sh     # 运行部署脚本
-   ```
-
-3. **手动添加参数**：
-   ```bash
-   ngrok http 3001 --inspect=false
-   ```
-
-4. **其他免费替代方案**：
-   - **Serveo**: `ssh -R 80:localhost:3001 serveo.net`
-   - **Cloudflare Tunnel**: `cloudflared tunnel --url http://localhost:3001`
+1. 确保你的代码已推送到 GitHub 仓库
+2. 运行 `./deploy-github.sh` 脚本
+3. 脚本会自动：
+   - 创建 `gh-pages` 分支
+   - 复制必要文件（index.html, script.js, style.css, lyrics.json）
+   - 推送到 GitHub
+4. 在 GitHub 仓库设置中启用 GitHub Pages
+   - 进入 Settings → Pages
+   - Source 选择 `gh-pages` 分支
+   - 保存后等待几分钟即可访问
 
 ## 📁 项目结构
 
 ```
-lyrics-wordle/
+lyrics_wordle/
 ├── index.html          # 前端页面
-├── style.css          # 样式文件
-├── script.js          # 前端逻辑
-├── server.js          # 后端服务器
-├── lyrics.json        # 歌词库
-├── package.json       # 项目配置
-└── README.md          # 说明文档
+├── style.css           # 样式文件
+├── script.js           # 游戏逻辑（纯前端）
+├── lyrics.json         # 歌词库
+├── server.js           # 本地开发服务器（可选）
+├── package.json        # 项目配置
+├── start.sh            # 本地启动脚本
+├── deploy.sh           # 本地部署脚本
+├── deploy-github.sh    # GitHub Pages 部署脚本
+├── 素材/               # 游戏素材文件夹
+└── README.md           # 说明文档
 ```
 
 ## 🛠 技术栈
 
 - **前端**: HTML5 + CSS3 + 原生JavaScript
-- **后端**: Node.js + Express
-- **部署**: 支持Vercel等平台
+- **后端**: Node.js + Express（仅用于本地开发）
+- **部署**: GitHub Pages（纯前端静态部署）
 
 ## 🎯 核心功能
 
-### 前端功能
-- 响应式游戏界面
-- 6x N 自适应网格布局
-- 实时输入验证
-- 动画效果和视觉反馈
-- 游戏状态管理
-- **智能提示系统**：显示包含答案中所有字符的提示汉字库，方便玩家输入
-
-### 后端功能
-- RESTful API接口
-- 歌词库管理
-- 智能字符比较算法
-- 错误处理和日志记录
-- **提示汉字生成**：自动生成包含歌词所有字符的汉字提示库
-
-## 📡 API接口
-
-### GET /api/game-state
-获取当前游戏状态和目标歌词
-
-**响应示例:**
-```json
-{
-  "success": true,
-  "lyric": "青春如同奔流的江河",
-  "length": 9
-}
-```
-
-### POST /api/guess
-提交猜测并获取颜色反馈
-
-**请求示例:**
-```json
-{
-  "guess": "青春如同奔流的江河"
-}
-```
-
-**响应示例:**
-```json
-{
-  "success": true,
-  "correct": true,
-  "colors": ["correct", "correct", "correct", "correct", "correct", "correct", "correct", "correct", "correct"]
-}
-```
-
-## 🎨 颜色状态说明
-
-- `correct`: 字符正确且位置正确（<span style="background-color: #6aaa64; color: white; padding: 2px 6px; border-radius: 4px;">绿色</span>）
-- `present`: 字符存在但位置错误（<span style="background-color: #c9b458; color: white; padding: 2px 6px; border-radius: 4px;">黄色</span>）
-- `absent`: 字符不在答案中（<span style="background-color: #787c7e; color: white; padding: 2px 6px; border-radius: 4px;">灰色</span>）
-
-## 💡 智能提示系统
-
-游戏提供智能提示汉字库功能：
-- **包含所有答案字符**：提示汉字库中包含歌词的所有字符，确保玩家能够找到正确答案
-- **混合干扰字符**：同时包含其他常用汉字作为干扰，保持游戏挑战性
-- **点击输入**：玩家可以直接点击提示汉字进行输入，提升游戏体验
-- **动态生成**：每次新游戏都会生成不同的提示汉字组合
-
-## 📱 响应式设计
-
-- 支持桌面端和移动端
-- 自适应屏幕尺寸
-- 触摸友好的操作界面
+- ✅ 响应式游戏界面
+- ✅ 6x N 自适应网格布局
+- ✅ 实时输入验证
+- ✅ 动画效果和视觉反馈
+- ✅ 智能提示系统（包含答案字符的汉字提示库）
+- ✅ Unicode 字符完美支持（表情符号等）
+- ✅ 纯前端实现，无需后端服务器
+- ✅ 本地存储游戏进度
 
 ## 🔧 自定义配置
 
 ### 修改歌词库
+
 编辑 `lyrics.json` 文件添加更多歌词：
+
 ```json
 [
   "你的歌词1",
@@ -214,53 +105,33 @@ lyrics-wordle/
 ```
 
 ### 修改游戏设置
+
 在 `script.js` 中可以调整：
-- `maxAttempts`: 最大尝试次数
+- `maxAttempts`: 最大尝试次数（默认6次）
 - 输入验证规则
-- 动画效果
+- 动画效果和颜色
 
-## 🚀 部署到Vercel
+## � 响应式设计
 
-1. 将代码推送到GitHub仓库
-2. 在Vercel中导入项目
-3. Vercel会自动检测Node.js项目并部署
-4. 访问生成的URL即可游戏
-
-### Vercel配置文件 (可选)
-创建 `vercel.json` 文件：
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
-    }
-  ]
-}
-```
+- ✅ 支持桌面端和移动端
+- ✅ 自适应屏幕尺寸
+- ✅ 触摸友好的操作界面
 
 ## 🤝 贡献指南
 
-欢迎提交Issue和Pull Request！
+欢迎提交 Issue 和 Pull Request！
 
 1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建Pull Request
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
 
 ## 📄 许可证
 
-MIT License - 详见 LICENSE 文件
+MIT License
 
-## 🎵 歌词来源
+## 🎵 注意事项
 
 游戏中的歌词来自流行的中文歌曲，仅用于娱乐和学习目的。
 
