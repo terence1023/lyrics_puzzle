@@ -186,14 +186,15 @@ class FirebaseStats {
 }
 
 // 创建全局实例
-const firebaseStats = new FirebaseStats();
+const firebaseStatsInstance = new FirebaseStats();
 
-// 兼容原有接口
-const GlobalStats = {
-    getTodayWins: () => firebaseStats.getTodayWins(),
-    recordWin: () => firebaseStats.recordWin(),
-    updateDisplay: () => firebaseStats.updateDisplay(),
-    init: () => firebaseStats.init()
+// 导出为全局变量
+window.GlobalStats = {
+    getTodayWins: async () => await firebaseStatsInstance.getTodayWins(),
+    recordWin: async () => await firebaseStatsInstance.recordWin(),
+    updateDisplay: async () => await firebaseStatsInstance.updateDisplay(),
+    init: async () => await firebaseStatsInstance.init()
 };
 
-const DailyStats = GlobalStats;
+// 别名
+window.DailyStats = window.GlobalStats;

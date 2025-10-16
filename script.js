@@ -524,9 +524,9 @@ guessInput.addEventListener('blur', function() {
 });
 
 // 页面加载完成后初始化游戏
-document.addEventListener('DOMContentLoaded', function() {
-    // 初始化全局统计系统
-    GlobalStats.init();
+document.addEventListener('DOMContentLoaded', async function() {
+    // 初始化全局统计系统（异步）
+    await GlobalStats.init();
     
     // 初始化游戏
     initGame();
